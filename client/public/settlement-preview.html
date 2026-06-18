@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>结算弹窗设计预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: #1a1a2e;
+      color: #ecf0f1;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .preview-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: #f1c40f;
+      margin-bottom: 40px;
+      font-size: 2rem;
+    }
+    .scheme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    .scheme-card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .scheme-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .scheme-title-a { background: linear-gradient(90deg, #3498db, #2980b9); color: white; }
+    .scheme-title-b { background: linear-gradient(90deg, #8e44ad, #3498db); color: white; }
+    .scheme-title-c { background: linear-gradient(90deg, #e91e63, #00bcd4); color: white; }
+
+    /* ===== 模拟数据 ===== */
+    .mock-modal {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* ===== 方案A：经典扑克俱乐部 ===== */
+    .modal-a {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 2px solid #3498db;
+      box-shadow: 0 8px 32px rgba(52, 152, 219, 0.3);
+    }
+    .modal-a .header {
+      background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .modal-a .header h2 {
+      color: #2c3e50;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .modal-a .header .pot {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .modal-a .community {
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+    .modal-a .community .card {
+      width: 36px;
+      height: 50px;
+      background: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #e74c3c;
+      font-size: 0.8rem;
+    }
+    .modal-a .community .card.black { color: #2c3e50; }
+    .modal-a .players {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .modal-a .player-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid transparent;
+    }
+    .modal-a .player-row.winner {
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(39, 174, 96, 0.1) 100%);
+      border-color: #2ecc71;
+      box-shadow: 0 2px 8px rgba(46, 204, 113, 0.2);
+    }
+    .modal-a .player-row.me {
+      border-color: #3498db;
+    }
+    .modal-a .rank {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #7f8c8d;
+      min-width: 28px;
+    }
+    .modal-a .player-row.winner .rank { color: #2ecc71; }
+    .modal-a .info {
+      flex: 1;
+    }
+    .modal-a .info .name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .modal-a .info .hand {
+      font-size: 0.75rem;
+      color: #f1c40f;
+      margin-top: 2px;
+    }
+    .modal-a .info .me-tag {
+      font-size: 0.65rem;
+      color: #3498db;
+      background: rgba(52, 152, 219, 0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+    .modal-a .profit {
+      font-size: 1.1rem;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: right;
+    }
+    .modal-a .profit.pos { color: #2ecc71; }
+    .modal-a .profit.neg { color: #7f8c8d; }
+    .modal-a .footer {
+      padding: 12px 20px;
+      text-align: center;
+      background: rgba(0,0,0,0.3);
+    }
+    .modal-a .footer button {
+      background: linear-gradient(90deg, #2ecc71, #27ae60);
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+
+    /* ===== 方案B：电竞竞技场 ===== */
+    .modal-b {
+      background: linear-gradient(135deg, #1a1a3e 0%, #0d1b2a 100%);
+      border: 2px solid #00e5ff;
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(0, 229, 255, 0.05);
+    }
+    .modal-b .header {
+      background: linear-gradient(90deg, #1a237e, #0d47a1);
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+    }
+    .modal-b .header .round {
+      font-size: 0.85rem;
+      color: #64b5f6;
+      margin-bottom: 6px;
+    }
+    .modal-b .header h2 {
+      color: #00e5ff;
+      font-size: 1.3rem;
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+    }
+    .modal-b .community {
+      padding: 12px;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+    }
+    .modal-b .community .card {
+      width: 36px;
+      height: 50px;
+      background: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #e74c3c;
+      font-size: 0.8rem;
+      box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+    }
+    .modal-b .community .card.black { color: #2c3e50; }
+    .modal-b .players {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .modal-b .player-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+    }
+    .modal-b .player-row.winner {
+      background: linear-gradient(90deg, rgba(0, 229, 255, 0.15), rgba(156, 39, 176, 0.1));
+      border-color: #00e5ff;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+    }
+    .modal-b .player-row.winner .trophy {
+      font-size: 1.2rem;
+    }
+    .modal-b .player-row.me {
+      border-color: #ff4081;
+    }
+    .modal-b .rank {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #64b5f6;
+      min-width: 28px;
+    }
+    .modal-b .info {
+      flex: 1;
+    }
+    .modal-b .info .name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+    .modal-b .info .hand {
+      font-size: 0.7rem;
+      color: #ce93d8;
+      margin-top: 2px;
+    }
+    .modal-b .info .me-tag {
+      font-size: 0.6rem;
+      color: #ff4081;
+      background: rgba(255, 64, 129, 0.15);
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 6px;
+    }
+    .modal-b .profit {
+      font-size: 1rem;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: right;
+    }
+    .modal-b .profit.pos { color: #00e676; text-shadow: 0 0 8px rgba(0, 230, 118, 0.4); }
+    .modal-b .profit.neg { color: #78909c; }
+    .modal-b .footer {
+      padding: 12px 20px;
+      text-align: center;
+      background: rgba(0,0,0,0.4);
+      border-top: 1px solid rgba(0, 229, 255, 0.1);
+    }
+    .modal-b .footer button {
+      background: linear-gradient(90deg, #00e5ff, #2979ff);
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ===== 方案C：霓虹夜城 ===== */
+    .modal-c {
+      background: linear-gradient(135deg, #1a0033 0%, #0d001a 100%);
+      border: 2px solid transparent;
+      border-image: linear-gradient(135deg, #e91e63, #00bcd4) 1;
+      box-shadow: 0 0 40px rgba(233, 30, 99, 0.2), 0 0 40px rgba(0, 188, 212, 0.2);
+    }
+    .modal-c .header {
+      background: linear-gradient(90deg, rgba(233, 30, 99, 0.2), rgba(0, 188, 212, 0.2));
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(233, 30, 99, 0.3);
+    }
+    .modal-c .header h2 {
+      font-size: 1.2rem;
+      background: linear-gradient(90deg, #e91e63, #00bcd4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal-c .header .pot {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00bcd4;
+      text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+      margin-top: 4px;
+    }
+    .modal-c .community {
+      padding: 12px;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+    .modal-c .community .card {
+      width: 36px;
+      height: 50px;
+      background: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #e74c3c;
+      font-size: 0.8rem;
+      box-shadow: 0 0 6px rgba(233, 30, 99, 0.4);
+    }
+    .modal-c .community .card.black { color: #2c3e50; }
+    .modal-c .players {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .modal-c .player-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .modal-c .player-row::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent, transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+    .modal-c .player-row.winner {
+      background: linear-gradient(90deg, rgba(233, 30, 99, 0.15), rgba(0, 188, 212, 0.1));
+    }
+    .modal-c .player-row.winner::before {
+      background: linear-gradient(90deg, #e91e63, #00bcd4);
+    }
+    .modal-c .player-row.winner .trophy {
+      font-size: 1.1rem;
+    }
+    .modal-c .player-row.me {
+      border-color: rgba(0, 188, 212, 0.5);
+    }
+    .modal-c .rank {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #9c27b0;
+      min-width: 28px;
+    }
+    .modal-c .player-row.winner .rank {
+      background: linear-gradient(90deg, #e91e63, #00bcd4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal-c .info {
+      flex: 1;
+    }
+    .modal-c .info .name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+    .modal-c .info .hand {
+      font-size: 0.7rem;
+      color: #ff80ab;
+      margin-top: 2px;
+    }
+    .modal-c .info .me-tag {
+      font-size: 0.6rem;
+      color: #00bcd4;
+      background: rgba(0, 188, 212, 0.15);
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 6px;
+    }
+    .modal-c .profit {
+      font-size: 1rem;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: right;
+    }
+    .modal-c .profit.pos {
+      background: linear-gradient(90deg, #e91e63, #00bcd4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal-c .profit.neg { color: #78909c; }
+    .modal-c .footer {
+      padding: 12px 20px;
+      text-align: center;
+      background: rgba(0,0,0,0.4);
+    }
+    .modal-c .footer button {
+      background: linear-gradient(90deg, #e91e63, #00bcd4);
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(233, 30, 99, 0.3), 0 0 20px rgba(0, 188, 212, 0.3);
+    }
+
+    /* ===== 说明 ===== */
+    .description {
+      margin-top: 40px;
+      padding: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .description h3 {
+      color: #f1c40f;
+      margin-bottom: 12px;
+    }
+    .description ul {
+      list-style: none;
+      padding: 0;
+    }
+    .description li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .description li:last-child {
+      border-bottom: none;
+    }
+    .description .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-right: 8px;
+    }
+    .tag-a { background: #3498db; color: white; }
+    .tag-b { background: linear-gradient(90deg, #8e44ad, #3498db); color: white; }
+    .tag-c { background: linear-gradient(90deg, #e91e63, #00bcd4); color: white; }
+  </style>
+</head>
+<body>
+  <div class="preview-container">
+    <h1>🎴 结算弹窗设计方案预览</h1>
+
+    <div class="scheme-grid">
+      <!-- 方案A：经典扑克俱乐部 -->
+      <div class="scheme-card">
+        <div class="scheme-title scheme-title-a">方案 A：经典扑克俱乐部</div>
+        <div class="mock-modal modal-a">
+          <div class="header">
+            <h2>第 12 局结算</h2>
+            <div class="pot">💰 2,450</div>
+          </div>
+          <div class="community">
+            <div class="card black">A♠</div>
+            <div class="card">K♥</div>
+            <div class="card">Q♥</div>
+            <div class="card black">J♣</div>
+            <div class="card">10♥</div>
+          </div>
+          <div class="players">
+            <div class="player-row winner">
+              <div class="rank">🏆</div>
+              <div class="info">
+                <div class="name">张三</div>
+                <div class="hand">同花顺 · A♠K♥Q♥J♣10♥</div>
+              </div>
+              <div class="profit pos">+2,450</div>
+            </div>
+            <div class="player-row me">
+              <div class="rank">#2</div>
+              <div class="info">
+                <div class="name">你<span class="me-tag">我</span></div>
+                <div class="hand">顺子 · 9♠8♥</div>
+              </div>
+              <div class="profit neg">-500</div>
+            </div>
+            <div class="player-row">
+              <div class="rank">#3</div>
+              <div class="info">
+                <div class="name">李四</div>
+                <div class="hand">高牌 · A♣7♦</div>
+              </div>
+              <div class="profit neg">-800</div>
+            </div>
+            <div class="player-row">
+              <div class="rank">#4</div>
+              <div class="info">
+                <div class="name">王五</div>
+                <div class="hand">已弃牌</div>
+              </div>
+              <div class="profit neg">-300</div>
+            </div>
+          </div>
+          <div class="footer">
+            <button>开始下一局</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 方案B：电竞竞技场 -->
+      <div class="scheme-card">
+        <div class="scheme-title scheme-title-b">方案 B：电竞竞技场</div>
+        <div class="mock-modal modal-b">
+          <div class="header">
+            <div class="round">ROUND 12 · 摊牌阶段</div>
+            <h2>💰 2,450</h2>
+          </div>
+          <div class="community">
+            <div class="card black">A♠</div>
+            <div class="card">K♥</div>
+            <div class="card">Q♥</div>
+            <div class="card black">J♣</div>
+            <div class="card">10♥</div>
+          </div>
+          <div class="players">
+            <div class="player-row winner">
+              <div class="trophy">🏆</div>
+              <div class="info">
+                <div class="name">张三</div>
+                <div class="hand">同花顺</div>
+              </div>
+              <div class="profit pos">+2,450</div>
+            </div>
+            <div class="player-row me">
+              <div class="rank">#2</div>
+              <div class="info">
+                <div class="name">你<span class="me-tag">ME</span></div>
+                <div class="hand">顺子</div>
+              </div>
+              <div class="profit neg">-500</div>
+            </div>
+            <div class="player-row">
+              <div class="rank">#3</div>
+              <div class="info">
+                <div class="name">李四</div>
+                <div class="hand">高牌</div>
+              </div>
+              <div class="profit neg">-800</div>
+            </div>
+            <div class="player-row">
+              <div class="rank">#4</div>
+              <div class="info">
+                <div class="name">王五</div>
+                <div class="hand">已弃牌</div>
+              </div>
+              <div class="profit neg">-300</div>
+            </div>
+          </div>
+          <div class="footer">
+            <button>NEXT ROUND</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 方案C：霓虹夜城 -->
+      <div class="scheme-card">
+        <div class="scheme-title scheme-title-c">方案 C：霓虹夜城</div>
+        <div class="mock-modal modal-c">
+          <div class="header">
+            <h2>第 12 局 · 摊牌</h2>
+            <div class="pot">💰 2,450</div>
+          </div>
+          <div class="community">
+            <div class="card black">A♠</div>
+            <div class="card">K♥</div>
+            <div class="card">Q♥</div>
+            <div class="card black">J♣</div>
+            <div class="card">10♥</div>
+          </div>
+          <div class="players">
+            <div class="player-row winner">
+              <div class="trophy">🏆</div>
+              <div class="info">
+                <div class="name">张三</div>
+                <div class="hand">同花顺</div>
+              </div>
+              <div class="profit pos">+2,450</div>
+            </div>
+            <div class="player-row me">
+              <div class="rank">#2</div>
+              <div class="info">
+                <div class="name">你<span class="me-tag">我</span></div>
+                <div class="hand">顺子</div>
+              </div>
+              <div class="profit neg">-500</div>
+            </div>
+            <div class="player-row">
+              <div class="rank">#3</div>
+              <div class="info">
+                <div class="name">李四</div>
+                <div class="hand">高牌</div>
+              </div>
+              <div class="profit neg">-800</div>
+            </div>
+            <div class="player-row">
+              <div class="rank">#4</div>
+              <div class="info">
+                <div class="name">王五</div>
+                <div class="hand">已弃牌</div>
+              </div>
+              <div class="profit neg">-300</div>
+            </div>
+          </div>
+          <div class="footer">
+            <button>开始下一局</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="description">
+      <h3>📋 方案特点对比</h3>
+      <ul>
+        <li>
+          <span class="tag tag-a">A</span>
+          <strong>经典扑克俱乐部</strong> — 深蓝底 + 金色顶栏，与现有牌桌风格一致，绿色赢家边框，视觉协调性最佳
+        </li>
+        <li>
+          <span class="tag tag-b">B</span>
+          <strong>电竞竞技场</strong> — 蓝紫渐变 + 青色霓虹，科技感强，奖杯图标醒目，按钮带大写英文
+        </li>
+        <li>
+          <span class="tag tag-c">C</span>
+          <strong>霓虹夜城</strong> — 暗紫底 + 品红/青色霓虹渐变，赛博朋克风，文字渐变效果最炫酷
+        </li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

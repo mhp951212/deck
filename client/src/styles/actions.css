@@ -1,0 +1,199 @@
+/* 操作栏样式 */
+.action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-table);
+  border-top: 2px solid var(--primary);
+  gap: 10px;
+}
+
+/* 计时器 */
+.action-timer {
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  height: 20px;
+  background: var(--dark);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.timer-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--success), var(--warning), var(--danger));
+  transition: width 1s linear;
+  border-radius: 10px;
+}
+
+.timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* 操作按钮组 */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  min-width: 80px;
+}
+
+.action-btn.fold {
+  background: #7f8c8d;
+  color: white;
+}
+
+.action-btn.fold:hover { background: #95a5a6; }
+
+.action-btn.check {
+  background: var(--primary);
+  color: white;
+}
+
+.action-btn.check:hover { background: var(--primary-dark); }
+
+.action-btn.call {
+  background: var(--success);
+  color: white;
+}
+
+.action-btn.call:hover { background: #27ae60; }
+
+.action-btn.raise {
+  background: var(--warning);
+  color: white;
+}
+
+.action-btn.raise:hover { background: #e67e22; }
+
+.action-btn.allin {
+  background: var(--danger);
+  color: white;
+  font-size: 1rem;
+}
+
+.action-btn.allin:hover { background: #c0392b; }
+
+/* 加注滑块组 */
+.raise-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.raise-slider {
+  width: 120px;
+  accent-color: var(--warning);
+}
+
+.raise-input {
+  width: 70px;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+/* 全下二次确认弹窗 */
+.allin-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.allin-confirm-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 3px solid var(--danger);
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+              0 0 40px rgba(231, 76, 60, 0.4);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.allin-confirm-text {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--danger);
+  text-align: center;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+}
+
+.allin-confirm-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.allin-btn-cancel,
+.allin-btn-confirm {
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.allin-btn-cancel {
+  background: #95a5a6;
+  color: white;
+}
+
+.allin-btn-cancel:hover {
+  background: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+.allin-btn-confirm {
+  background: var(--danger);
+  color: white;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.allin-btn-confirm:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+}

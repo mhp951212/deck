@@ -1,0 +1,183 @@
+/* 房间结算弹窗样式 */
+.room-settlement-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.room-settlement-modal {
+  background: linear-gradient(135deg, rgba(30, 40, 60, 0.95), rgba(20, 30, 50, 0.95));
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 20px 24px;
+  max-width: 800px;
+  width: 90%;
+  box-shadow: 0 0 60px rgba(241, 196, 15, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.room-settlement-header {
+  text-align: center;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(241, 196, 15, 0.3);
+  padding-bottom: 12px;
+}
+
+.room-settlement-header h2 {
+  color: var(--gold);
+  font-size: 1.5rem;
+  margin: 0 0 10px 0;
+  text-shadow: 0 0 20px rgba(241, 196, 15, 0.6);
+}
+
+.room-settlement-countdown {
+  color: var(--warning);
+  font-size: 1rem;
+  font-weight: bold;
+  background: rgba(241, 196, 15, 0.1);
+  padding: 6px 14px;
+  border-radius: 8px;
+  display: inline-block;
+  border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.room-settlement-content {
+  margin: 0;
+}
+
+.room-settlement-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.room-settlement-table thead {
+  background: rgba(241, 196, 15, 0.15);
+}
+
+.room-settlement-table th {
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid rgba(241, 196, 15, 0.3);
+}
+
+.room-settlement-table td {
+  padding: 8px 12px;
+  color: var(--light);
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.room-settlement-table tr:last-child td {
+  border-bottom: none;
+}
+
+.room-settlement-table tr.me {
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.rank-cell {
+  text-align: center;
+  font-size: 1.2rem;
+  width: 60px;
+}
+
+.name-cell {
+  font-weight: 600;
+}
+
+.me-badge {
+  background: var(--primary);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: bold;
+}
+
+.chips-cell {
+  font-weight: bold;
+  color: var(--success);
+}
+
+.investment-detail {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 6px;
+  font-weight: normal;
+}
+
+.profit-cell {
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+.profit-positive {
+  color: var(--success);
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+}
+
+.profit-negative {
+  color: var(--danger);
+  text-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+}
+
+.profit-zero {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.room-settlement-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.room-settlement-footer p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* 房间结算按钮（房主专属） */
+.room-settlement-btn {
+  background: linear-gradient(135deg, var(--gold), #d4ac0d);
+  color: var(--dark);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(241, 196, 15, 0.3);
+}
+
+.room-settlement-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(241, 196, 15, 0.5);
+}
+
+/* 等待界面中的按钮容器 */
+.waiting-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}

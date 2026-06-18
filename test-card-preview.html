@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>梅花A 效果预览</title>
+  <style>
+    /* 全局样式 */
+    :root {
+      --primary: #3498db;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --bg-dark: #1a1a2e;
+      --bg-table: #16213e;
+      --gold: #f1c40f;
+      --card-bg: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: radial-gradient(ellipse at center, #1a472a 0%, #0d2818 70%);
+      color: var(--light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    h1 {
+      color: var(--gold);
+      font-size: 2rem;
+    }
+
+    /* 卡牌样式 */
+    .card {
+      width: 72px;
+      height: 100px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .card-large {
+      width: 120px;
+      height: 168px;
+    }
+
+    /* 牌面 */
+    .card-face {
+      width: 100%;
+      height: 100%;
+      background: var(--card-bg);
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .card-corner {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    .card-large .card-corner {
+      font-size: 1.5rem;
+    }
+
+    .card-corner.top-left {
+      top: 5px;
+      left: 6px;
+    }
+
+    .card-corner.bottom-right {
+      bottom: 5px;
+      right: 6px;
+      transform: rotate(180deg);
+    }
+
+    .card-rank {
+      font-weight: bold;
+    }
+
+    .card-suit {
+      line-height: 1;
+    }
+
+    .card-center {
+      font-size: 2rem;
+    }
+
+    .card-large .card-center {
+      font-size: 4rem;
+    }
+
+    .card-suit-large {
+      line-height: 1;
+    }
+
+    /* 容器 */
+    .card-container {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-label {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .card-wrapper:hover .card {
+      transform: translateY(-8px);
+    }
+  </style>
+</head>
+<body>
+  <h1>♣ 梅花A 效果预览 ♣</h1>
+
+  <div class="card-container">
+    <!-- 小尺寸（游戏中） -->
+    <div class="card-wrapper">
+      <div class="card">
+        <div class="card-face" style="color: #2c3e50;">
+          <div class="card-corner top-left">
+            <span class="card-rank">A</span>
+            <span class="card-suit">♣</span>
+          </div>
+          <div class="card-center">
+            <span class="card-suit-large">♣</span>
+          </div>
+          <div class="card-corner bottom-right">
+            <span class="card-rank">A</span>
+            <span class="card-suit">♣</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-label">小尺寸（游戏中）<br>72×100px</div>
+    </div>
+
+    <!-- 大尺寸（底部手牌区） -->
+    <div class="card-wrapper">
+      <div class="card card-large">
+        <div class="card-face" style="color: #2c3e50;">
+          <div class="card-corner top-left">
+            <span class="card-rank">A</span>
+            <span class="card-suit">♣</span>
+          </div>
+          <div class="card-center">
+            <span class="card-suit-large">♣</span>
+          </div>
+          <div class="card-corner bottom-right">
+            <span class="card-rank">A</span>
+            <span class="card-suit">♣</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-label">大尺寸（底部手牌区）<br>120×168px</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px; text-align: center; color: rgba(255,255,255,0.6);">
+    <p>梅花颜色：#2c3e50（深灰蓝）</p>
+    <p>鼠标悬停卡片查看上移效果</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>牌桌布局测试</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #2d2d2d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  /* 外层椭圆边框 */
+  .table-outer {
+    position: relative;
+    width: 900px;
+    height: 500px;
+    background: #1a1a1a;
+    border-radius: 250px / 160px;
+    padding: 18px;
+    box-shadow:
+      0 0 60px rgba(0,0,0,0.8),
+      inset 0 0 20px rgba(0,0,0,0.5);
+    border: 4px solid #333;
+  }
+
+  /* 绿色牌桌 */
+  .table-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 45%, #2a8c4a 0%, #1d6b37 50%, #145a2e 100%);
+    border-radius: 232px / 142px;
+    border: 3px solid #1a5c30;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+  }
+
+  /* 座位 */
+  .seat {
+    position: absolute;
+    width: 130px;
+    text-align: center;
+    z-index: 10;
+  }
+
+  /* 玩家信息条 */
+  .player-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 0 auto;
+    width: fit-content;
+    backdrop-filter: blur(4px);
+  }
+
+  .player-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .player-name {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .player-chips {
+    font-size: 0.75rem;
+    color: #2ecc71;
+    font-weight: bold;
+  }
+
+  /* 牌 */
+  .player-cards {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    margin: 4px 0;
+  }
+
+  .card-back {
+    width: 32px;
+    height: 44px;
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    border-radius: 4px;
+    border: 1.5px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  .card-back.pattern {
+    background:
+      repeating-linear-gradient(45deg, #c0392b 0px, #c0392b 3px, #e74c3c 3px, #e74c3c 6px);
+  }
+
+  /* 筹码堆 */
+  .chips-pile {
+    position: absolute;
+    z-index: 5;
+  }
+
+  .chip {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
+    position: absolute;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  .chip.red { background: #e74c3c; }
+  .chip.blue { background: #2980b9; }
+  .chip.black { background: #2c3e50; }
+  .chip.green { background: #27ae60; }
+  .chip.yellow { background: #f1c40f; }
+
+  .chip-pile-label {
+    position: absolute;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+
+  /* 公共牌区域 */
+  .community-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 6px;
+    z-index: 15;
+  }
+
+  .community-card {
+    width: 52px;
+    height: 72px;
+    background: #fff;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  .community-card .suit-small {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-size: 0.6rem;
+  }
+
+  .community-card .suit-center {
+    font-size: 1.6rem;
+  }
+
+  .community-card.red { color: #e74c3c; }
+  .community-card.black { color: #1a1a1a; }
+
+  /* 底池标签 */
+  .pot-label {
+    position: absolute;
+    top: 68%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    z-index: 15;
+    white-space: nowrap;
+  }
+
+  /* 庄家按钮 */
+  .dealer-btn {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    z-index: 15;
+  }
+
+  /* 玩家下注筹码 */
+  .bet-chips {
+    position: absolute;
+    z-index: 8;
+  }
+
+  .bet-chips .chip {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ===== 9个座位定位（模拟参考图） ===== */
+
+  /* 顶部中间 */
+  .seat-0 { top: -20px; left: 50%; transform: translateX(-50%); }
+
+  /* 右上 */
+  .seat-1 { top: 10px; right: 60px; }
+
+  /* 右中 */
+  .seat-2 { top: 50%; right: -10px; transform: translateY(-50%); }
+
+  /* 右下 */
+  .seat-3 { bottom: 10px; right: 60px; }
+
+  /* 底部中间偏右 */
+  .seat-4 { bottom: -20px; right: 30%; }
+
+  /* 底部中间偏左 */
+  .seat-5 { bottom: -20px; left: 30%; }
+
+  /* 左下 */
+  .seat-6 { bottom: 10px; left: 60px; }
+
+  /* 左中 */
+  .seat-7 { top: 50%; left: -10px; transform: translateY(-50%); }
+
+  /* 左上 */
+  .seat-8 { top: 10px; left: 60px; }
+
+  /* 标题 */
+  .page-title {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #aaa;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">牌桌布局测试 — 参考图还原</div>
+
+<div class="table-outer">
+  <div class="table-inner">
+
+    <!-- 座位0: Anthony (顶部中间) -->
+    <div class="seat seat-0">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar"></div>
+        <div>
+          <div class="player-name">ANTHONY</div>
+          <div class="player-chips">$21</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位1: Kaylee (右上) -->
+    <div class="seat seat-1">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">KAYLEE</div>
+          <div class="player-chips">$178</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位2: Michael (右中) -->
+    <div class="seat seat-2">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">MICHAEL</div>
+          <div class="player-chips">$127</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位3: Daniel (右下) -->
+    <div class="seat seat-3">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">DANIEL</div>
+          <div class="player-chips">$54</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位4: Victoria (底部偏右) -->
+    <div class="seat seat-4">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">VICTORIA</div>
+          <div class="player-chips">$340</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位5: Joseph (底部偏左) -->
+    <div class="seat seat-5">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">JOSEPH</div>
+          <div class="player-chips">$102</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位6: Amelia (左下) -->
+    <div class="seat seat-6">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">AMELIA</div>
+          <div class="player-chips">$49</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 座位7: Tyler (左中) -->
+    <div class="seat seat-7">
+      <div class="player-cards">
+        <div class="card-back pattern"></div>
+        <div class="card-back pattern"></div>
+      </div>
+      <div class="player-info-bar">
+        <div class="player-avatar">👤</div>
+        <div>
+          <div class="player-name">TYLER</div>
+          <div class="player-chips">$235</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 庄家按钮 D -->
+    <div class="dealer-btn" style="bottom: 105px; right: 155px;">D</div>
+
+    <!-- 筹码堆（桌中央偏下） -->
+    <div class="chips-pile" style="top: 290px; left: 410px;">
+      <div class="chip black" style="left:0; top:0;"></div>
+      <div class="chip red" style="left:6px; top:-3px;"></div>
+      <div class="chip blue" style="left:12px; top:0;"></div>
+      <div class="chip black" style="left:3px; top:6px;"></div>
+      <div class="chip red" style="left:9px; top:5px;"></div>
+    </div>
+
+    <!-- 公共牌 -->
+    <div class="community-area">
+      <div class="community-card red">
+        <span class="suit-small">♦</span>
+        <span>8</span>
+        <span class="suit-center">♦</span>
+      </div>
+      <div class="community-card black">
+        <span class="suit-small">♠</span>
+        <span>A</span>
+        <span class="suit-center">♠</span>
+      </div>
+      <div class="community-card red">
+        <span class="suit-small">♥</span>
+        <span>9</span>
+        <span class="suit-center">♥</span>
+      </div>
+      <div class="community-card red">
+        <span class="suit-small">♥</span>
+        <span>K</span>
+        <span class="suit-center">♥</span>
+      </div>
+      <div class="community-card black">
+        <span class="suit-small">♣</span>
+        <span>J</span>
+        <span class="suit-center">♣</span>
+      </div>
+    </div>
+
+    <!-- 底池 -->
+    <div class="pot-label">$261</div>
+
+    <!-- 右侧零散筹码 -->
+    <div class="chips-pile" style="top: 230px; right: 140px;">
+      <div class="chip red" style="left:0; top:0;"></div>
+      <div class="chip blue" style="left:5px; top:3px;"></div>
+      <div class="chip red" style="left:10px; top:0;"></div>
+    </div>
+
+    <!-- 左侧零散筹码 -->
+    <div class="chips-pile" style="top: 220px; left: 170px;">
+      <div class="chip black" style="left:0; top:0;"></div>
+      <div class="chip red" style="left:4px; top:3px;"></div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

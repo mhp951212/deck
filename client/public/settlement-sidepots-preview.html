@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>结算弹窗 - 边池预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: #1a1a2e;
+      color: #ecf0f1;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .preview-container { max-width: 680px; margin: 0 auto; }
+    h1 { text-align: center; color: #f1c40f; margin-bottom: 12px; font-size: 1.5rem; }
+    .scenario-desc {
+      text-align: center;
+      color: #95a5a6;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .scenario-desc code {
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #f1c40f;
+    }
+
+    /* ===== 方案A 结算弹窗样式 ===== */
+    .settlement-modal {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 3px solid #3498db;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(52,152,219,0.3);
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 顶部 */
+    .settlement-header {
+      background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
+      padding: 20px 30px;
+      text-align: center;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+    }
+    .settlement-title {
+      font-size: 22px; font-weight: bold; color: #2c3e50; margin-bottom: 10px;
+    }
+    .settlement-pot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .settlement-pot .pot-label { font-size: 14px; color: #34495e; font-weight: 500; }
+    .settlement-pot .pot-value { font-size: 30px; font-weight: bold; color: #2c3e50; }
+
+    /* 边池摘要条 */
+    .side-pots-bar {
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.25);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .side-pot-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .side-pot-chip.main {
+      background: rgba(241,196,15,0.15);
+      border-color: rgba(241,196,15,0.4);
+      color: #f1c40f;
+    }
+    .side-pot-chip.side {
+      background: rgba(155,89,182,0.15);
+      border-color: rgba(155,89,182,0.4);
+      color: #bb86fc;
+    }
+    .side-pot-chip .sp-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .side-pot-chip.main .sp-dot { background: #f1c40f; }
+    .side-pot-chip.side .sp-dot { background: #bb86fc; }
+
+    /* 公共牌 */
+    .settlement-community {
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+    .card {
+      width: 38px; height: 54px;
+      background: white;
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 0.85rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .card.red { color: #e74c3c; }
+    .card.black { color: #2c3e50; }
+
+    /* 玩家行 */
+    .settlement-players {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .settlement-player-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .settlement-player-row.winner {
+      background: linear-gradient(135deg, rgba(46,204,113,0.15), rgba(39,174,96,0.08));
+      border-color: #2ecc71;
+      box-shadow: 0 4px 12px rgba(46,204,113,0.2);
+    }
+    .settlement-player-row.me { border-color: #3498db; }
+
+    .player-rank {
+      font-size: 18px; font-weight: bold; color: #7f8c8d; min-width: 36px; text-align: center;
+    }
+    .winner .player-rank { color: #2ecc71; }
+
+    .player-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .player-name-row { display: flex; align-items: center; gap: 6px; }
+    .player-name { font-size: 15px; font-weight: 600; color: #ecf0f1; }
+    .me-tag {
+      font-size: 11px; color: #3498db; background: rgba(52,152,219,0.2);
+      padding: 1px 7px; border-radius: 6px; font-weight: 500;
+    }
+    .winner-tag {
+      font-size: 11px; color: #2ecc71; background: rgba(46,204,113,0.2);
+      padding: 1px 7px; border-radius: 6px; font-weight: 500;
+    }
+    .player-hand-info { display: flex; align-items: center; gap: 8px; }
+    .hole-cards { display: flex; gap: 3px; }
+    .hole-cards .card { width: 28px; height: 40px; font-size: 0.7rem; border-radius: 3px; }
+    .hand-rank-name {
+      font-size: 12px; color: #f1c40f; font-weight: 500;
+      background: rgba(241,196,15,0.1); padding: 2px 7px; border-radius: 5px;
+    }
+    .player-folded-label { font-size: 12px; color: #7f8c8d; font-style: italic; }
+
+    /* 边池赢得明细 */
+    .pot-wins-detail {
+      display: flex; flex-direction: column; gap: 3px; margin-top: 2px;
+    }
+    .pot-win-line {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 500;
+    }
+    .pot-win-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    }
+    .pot-win-dot.main { background: #f1c40f; }
+    .pot-win-dot.side { background: #bb86fc; }
+    .pot-win-label { color: #bdc3c7; }
+    .pot-win-amount { color: #2ecc71; font-weight: 600; }
+
+    .player-profit { text-align: right; min-width: 70px; }
+    .profit-positive {
+      font-size: 20px; font-weight: bold; color: #2ecc71;
+      text-shadow: 0 2px 4px rgba(46,204,113,0.3);
+    }
+    .profit-negative { font-size: 16px; font-weight: 500; color: #7f8c8d; }
+
+    /* 底部 */
+    .settlement-footer {
+      padding: 16px 24px;
+      background: rgba(0,0,0,0.3);
+      text-align: center;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .my-chips-display { font-size: 14px; color: #ecf0f1; }
+    .my-chips-value { color: #f1c40f; font-weight: bold; font-size: 16px; margin-left: 4px; }
+    .settlement-ready-btn {
+      background: linear-gradient(90deg, #2ecc71, #27ae60);
+      color: white; border: none; padding: 12px 36px;
+      font-size: 15px; font-weight: bold; border-radius: 24px;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(46,204,113,0.3);
+    }
+    .settlement-ready-count { font-size: 13px; color: #ecf0f1; font-weight: 500; }
+
+    /* 分隔标题 */
+    .section-label {
+      text-align: center;
+      margin: 30px 0 12px;
+      font-size: 0.85rem;
+      color: #95a5a6;
+    }
+    .section-label span {
+      background: rgba(255,255,255,0.05);
+      padding: 4px 14px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-container">
+    <h1>🎴 方案A - 边池结算预览</h1>
+
+    <!-- ===== 场景1：有边池 ===== -->
+    <div class="scenario-desc">
+      <code>场景1：多人 All-in 边池</code><br>
+      张三 All-in 200 · 你 All-in 500 · 李四 All-in 1000<br>
+      主池 600（3人争夺）· 边池1 600（你 vs 李四）· 边池2 500（仅李四可赢）
+    </div>
+
+    <div class="settlement-modal">
+      <div class="settlement-header">
+        <div class="settlement-title">第 12 局结算</div>
+        <div class="settlement-pot">
+          <span class="pot-label">总底池</span>
+          <span class="pot-value">💰 1,700</span>
+        </div>
+      </div>
+
+      <!-- 边池摘要 -->
+      <div class="side-pots-bar">
+        <div class="side-pot-chip main">
+          <span class="sp-dot"></span>
+          主池 💰600
+        </div>
+        <div class="side-pot-chip side">
+          <span class="sp-dot"></span>
+          边池1 💰600
+        </div>
+        <div class="side-pot-chip side">
+          <span class="sp-dot"></span>
+          边池2 💰500
+        </div>
+      </div>
+
+      <!-- 公共牌 -->
+      <div class="settlement-community">
+        <div class="card red">A♥</div>
+        <div class="card black">K♠</div>
+        <div class="card red">Q♥</div>
+        <div class="card black">J♣</div>
+        <div class="card red">10♥</div>
+      </div>
+
+      <!-- 玩家结果 -->
+      <div class="settlement-players">
+        <!-- 第1名：李四 -->
+        <div class="settlement-player-row winner">
+          <div class="player-rank">🏆</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">李四</span>
+              <span class="winner-tag">赢家</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card red">A♠</div>
+                <div class="card red">K♥</div>
+              </div>
+              <span class="hand-rank-name">两对</span>
+            </div>
+            <div class="pot-wins-detail">
+              <div class="pot-win-line">
+                <span class="pot-win-dot main"></span>
+                <span class="pot-win-label">主池</span>
+                <span class="pot-win-amount">+600</span>
+              </div>
+              <div class="pot-win-line">
+                <span class="pot-win-dot side"></span>
+                <span class="pot-win-label">边池1</span>
+                <span class="pot-win-amount">+600</span>
+              </div>
+              <div class="pot-win-line">
+                <span class="pot-win-dot side"></span>
+                <span class="pot-win-label">边池2</span>
+                <span class="pot-win-amount">+500</span>
+              </div>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-positive">+700</span>
+          </div>
+        </div>
+
+        <!-- 第2名：你 -->
+        <div class="settlement-player-row me">
+          <div class="player-rank">#2</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">你</span>
+              <span class="me-tag">我</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card black">A♣</div>
+                <div class="card red">Q♦</div>
+              </div>
+              <span class="hand-rank-name">顺子</span>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-negative">-500</span>
+          </div>
+        </div>
+
+        <!-- 第3名：张三 -->
+        <div class="settlement-player-row">
+          <div class="player-rank">#3</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">张三</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card black">9♠</div>
+                <div class="card red">8♥</div>
+              </div>
+              <span class="hand-rank-name">高牌</span>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-negative">-200</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部 -->
+      <div class="settlement-footer">
+        <div class="my-chips-display">
+          我的筹码：<span class="my-chips-value">500</span>
+        </div>
+        <button class="settlement-ready-btn">开始下一局</button>
+        <div class="settlement-ready-count">已准备玩家 0/3</div>
+      </div>
+    </div>
+
+    <!-- ===== 场景2：平局边池 ===== -->
+    <div class="section-label"><span>▼ 场景2：边池平局均分</span></div>
+
+    <div class="scenario-desc">
+      张三 All-in 300 · 你 All-in 300 · 李四加注到 800<br>
+      主池 900（3人）· 边池 500（仅李四）<br>
+      张三和你平局均分主池
+    </div>
+
+    <div class="settlement-modal">
+      <div class="settlement-header">
+        <div class="settlement-title">第 13 局结算</div>
+        <div class="settlement-pot">
+          <span class="pot-label">总底池</span>
+          <span class="pot-value">💰 1,400</span>
+        </div>
+      </div>
+
+      <div class="side-pots-bar">
+        <div class="side-pot-chip main">
+          <span class="sp-dot"></span>
+          主池 💰900
+        </div>
+        <div class="side-pot-chip side">
+          <span class="sp-dot"></span>
+          边池 💰500
+        </div>
+      </div>
+
+      <div class="settlement-community">
+        <div class="card red">7♥</div>
+        <div class="card black">8♠</div>
+        <div class="card red">9♥</div>
+        <div class="card black">10♣</div>
+        <div class="card red">J♥</div>
+      </div>
+
+      <div class="settlement-players">
+        <!-- 李四：赢边池 -->
+        <div class="settlement-player-row winner">
+          <div class="player-rank">🏆</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">李四</span>
+              <span class="winner-tag">赢家</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card black">Q♠</div>
+                <div class="card red">K♥</div>
+              </div>
+              <span class="hand-rank-name">顺子</span>
+            </div>
+            <div class="pot-wins-detail">
+              <div class="pot-win-line">
+                <span class="pot-win-dot side"></span>
+                <span class="pot-win-label">边池</span>
+                <span class="pot-win-amount">+500</span>
+              </div>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-positive">-300</span>
+          </div>
+        </div>
+
+        <!-- 你：平局赢主池一半 -->
+        <div class="settlement-player-row winner me">
+          <div class="player-rank">🏆</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">你</span>
+              <span class="me-tag">我</span>
+              <span class="winner-tag">平局</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card black">A♣</div>
+                <div class="card black">6♣</div>
+              </div>
+              <span class="hand-rank-name">同花</span>
+            </div>
+            <div class="pot-wins-detail">
+              <div class="pot-win-line">
+                <span class="pot-win-dot main"></span>
+                <span class="pot-win-label">主池（平局均分）</span>
+                <span class="pot-win-amount">+450</span>
+              </div>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-positive">+150</span>
+          </div>
+        </div>
+
+        <!-- 张三：平局赢主池一半 -->
+        <div class="settlement-player-row winner">
+          <div class="player-rank">🏆</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">张三</span>
+              <span class="winner-tag">平局</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card red">A♥</div>
+                <div class="card black">5♠</div>
+              </div>
+              <span class="hand-rank-name">同花</span>
+            </div>
+            <div class="pot-wins-detail">
+              <div class="pot-win-line">
+                <span class="pot-win-dot main"></span>
+                <span class="pot-win-label">主池（平局均分）</span>
+                <span class="pot-win-amount">+450</span>
+              </div>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-positive">+150</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settlement-footer">
+        <div class="my-chips-display">
+          我的筹码：<span class="my-chips-value">450</span>
+        </div>
+        <button class="settlement-ready-btn">开始下一局</button>
+        <div class="settlement-ready-count">已准备玩家 0/3</div>
+      </div>
+    </div>
+
+    <!-- ===== 场景3：简单无底池 ===== -->
+    <div class="section-label"><span>▼ 场景3：无 All-in 无底池</span></div>
+
+    <div class="scenario-desc">
+      没人 All-in，无底池，普通赢局
+    </div>
+
+    <div class="settlement-modal">
+      <div class="settlement-header">
+        <div class="settlement-title">第 14 局结算</div>
+        <div class="settlement-pot">
+          <span class="pot-label">总底池</span>
+          <span class="pot-value">💰 600</span>
+        </div>
+      </div>
+
+      <div class="side-pots-bar">
+        <div class="side-pot-chip main">
+          <span class="sp-dot"></span>
+          主池 💰600
+        </div>
+      </div>
+
+      <div class="settlement-community">
+        <div class="card red">2♥</div>
+        <div class="card black">7♠</div>
+        <div class="card red">3♥</div>
+        <div class="card black">9♣</div>
+        <div class="card red">K♥</div>
+      </div>
+
+      <div class="settlement-players">
+        <!-- 你 -->
+        <div class="settlement-player-row winner me">
+          <div class="player-rank">🏆</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">你</span>
+              <span class="me-tag">我</span>
+              <span class="winner-tag">赢家</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card black">A♣</div>
+                <div class="card black">K♠</div>
+              </div>
+              <span class="hand-rank-name">一对</span>
+            </div>
+            <div class="pot-wins-detail">
+              <div class="pot-win-line">
+                <span class="pot-win-dot main"></span>
+                <span class="pot-win-label">主池</span>
+                <span class="pot-win-amount">+600</span>
+              </div>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-positive">+400</span>
+          </div>
+        </div>
+
+        <!-- 对手 -->
+        <div class="settlement-player-row">
+          <div class="player-rank">#2</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">王五</span>
+            </div>
+            <div class="player-hand-info">
+              <div class="hole-cards">
+                <div class="card red">Q♥</div>
+                <div class="card black">J♣</div>
+              </div>
+              <span class="hand-rank-name">高牌</span>
+            </div>
+          </div>
+          <div class="player-profit">
+            <span class="profit-negative">-200</span>
+          </div>
+        </div>
+
+        <div class="settlement-player-row">
+          <div class="player-rank">#3</div>
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">赵六</span>
+            </div>
+            <span class="player-folded-label">已弃牌</span>
+          </div>
+          <div class="player-profit">
+            <span class="profit-negative">-200</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settlement-footer">
+        <div class="my-chips-display">
+          我的筹码：<span class="my-chips-value">1200</span>
+        </div>
+        <button class="settlement-ready-btn">开始下一局</button>
+        <div class="settlement-ready-count">已准备玩家 0/3</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

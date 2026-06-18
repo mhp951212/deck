@@ -1,0 +1,40 @@
+{
+  "name": "lan-poker",
+  "version": "1.0.0",
+  "description": "LAN Texas Hold'em Poker - Electron Desktop App",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev:server": "cd server && node src/app.js",
+    "dev:client": "cd client && npx vite --host",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build:client": "cd client && npx vite build",
+    "start": "npm run build:client && electron .",
+    "server": "cd server && node src/app.js",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build:client && electron-builder"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.lanpoker.app",
+    "productName": "LAN Poker",
+    "files": [
+      "electron/**/*",
+      "server/**/*",
+      "shared/**/*",
+      "client/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "server/node_modules",
+        "to": "server/node_modules"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
