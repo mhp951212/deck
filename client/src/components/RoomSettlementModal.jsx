@@ -45,7 +45,7 @@ function RoomSettlementModal() {
                       {isMe(player.id) && <span className="me-badge">我</span>}
                     </td>
                     <td className="chips-cell">
-                      💰{player.currentChips}
+                      ⚡{player.currentChips}
                       <span className="investment-detail">(总投入{player.totalInvestment})</span>
                     </td>
                     <td className={`profit-cell ${profitClass}`}>

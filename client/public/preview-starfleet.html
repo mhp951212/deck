@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>预览B - 星舰战术界面</title>
+<style>
+/* ===== 星舰战术界面 风格 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --hud-green: #00ff41;
+  --hud-green-dim: rgba(0, 255, 65, 0.35);
+  --hud-amber: #ffbf00;
+  --hud-red: #ff2200;
+  --hud-blue: #00a8ff;
+  --hud-white: #e8f0e8;
+  --bg-space: #080c18;
+  --bg-panel: rgba(8, 16, 32, 0.88);
+  --border-hud: rgba(0, 255, 65, 0.25);
+  --glow-green: 0 0 8px rgba(0, 255, 65, 0.4);
+  --glow-amber: 0 0 8px rgba(255, 191, 0, 0.4);
+  --text-main: #c8e0c8;
+  --text-dim: rgba(0, 255, 65, 0.35);
+  --font-hud: 'Courier New', 'Consolas', monospace;
+}
+body {
+  font-family: var(--font-hud);
+  background: var(--bg-space);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+}
+/* 星空背景 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 80% 50%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 90% 10%, rgba(0,255,65,0.2), transparent),
+    radial-gradient(1px 1px at 50% 60%, rgba(255,255,255,0.2), transparent),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 168, 255, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* === 顶部HUD条 === */
+.hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-hud);
+  flex-shrink: 0;
+}
+.hud-top::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hud-green), transparent 30%, transparent 70%, var(--hud-green));
+}
+.ship-id {
+  color: var(--hud-green);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: var(--glow-green);
+}
+.cycle-num {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+.energy-val {
+  color: var(--hud-amber);
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+.hud-exit {
+  background: rgba(255, 34, 0, 0.1);
+  border: 1px solid rgba(255, 34, 0, 0.3);
+  color: var(--hud-red);
+  padding: 3px 10px;
+  font-size: 0.65rem;
+  font-family: var(--font-hud);
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+/* === 主战术区 === */
+.tactical-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 雷达/战术面板 */
+.radar-panel {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-hud);
+  border-radius: 8px;
+  overflow: hidden;
+}
+/* 雷达扫描线 */
+.radar-panel::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 160px; height: 160px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(0, 255, 65, 0.15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.radar-panel::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 80px; height: 80px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(0, 255, 65, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 上方位置 - 远程单位 */
+.units-top {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 0;
+  z-index: 2;
+}
+.unit-card {
+  width: 72px;
+  background: rgba(0, 255, 65, 0.06);
+  border: 1px solid var(--border-hud);
+  border-radius: 4px;
+  padding: 6px;
+  text-align: center;
+  position: relative;
+}
+.unit-card.active-unit {
+  border-color: var(--hud-amber);
+  box-shadow: var(--glow-amber);
+}
+.unit-card.my-unit {
+  border-color: var(--hud-blue);
+  box-shadow: 0 0 10px rgba(0, 168, 255, 0.4);
+}
+.unit-card.folded-unit {
+  opacity: 0.25;
+}
+.unit-card.empty-unit {
+  background: transparent;
+  border-color: rgba(0, 255, 65, 0.1);
+  color: var(--text-dim);
+  font-size: 0.6rem;
+}
+.unit-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 255, 65, 0.1);
+  border: 1px solid var(--border-hud);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--hud-green);
+}
+.unit-name {
+  font-size: 0.55rem;
+  color: var(--hud-white);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.unit-energy {
+  font-size: 0.5rem;
+  color: var(--hud-green);
+  font-weight: bold;
+}
+.unit-signal {
+  font-size: 0.45rem;
+  color: var(--hud-amber);
+}
+.unit-status-icons {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 2px;
+}
+.status-dot {
+  width: 14px; height: 20px;
+  background: rgba(0, 255, 65, 0.15);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 2px;
+  font-size: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.badge-hud {
+  font-size: 0.4rem;
+  color: var(--hud-amber);
+  background: rgba(255, 191, 0, 0.1);
+  border: 1px solid rgba(255, 191, 0, 0.3);
+  padding: 0px 3px;
+  border-radius: 1px;
+  letter-spacing: 1px;
+}
+
+/* 公共信号（原公共牌） */
+.signal-array {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding: 10px 0 4px;
+  z-index: 2;
+}
+.signal-chip {
+  width: 48px; height: 66px;
+  background: rgba(0, 255, 65, 0.08);
+  border: 1px solid var(--hud-green-dim);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  position: relative;
+}
+.signal-chip.active-signal {
+  border-color: var(--hud-green);
+  box-shadow: var(--glow-green);
+}
+.signal-chip.blank-signal {
+  background: transparent;
+  border-color: rgba(0, 255, 65, 0.1);
+  box-shadow: none;
+}
+.signal-chip .chip-id {
+  font-size: 0.4rem;
+  color: var(--text-dim);
+  position: absolute;
+  top: 2px;
+}
+
+/* 能量池 */
+.energy-pool {
+  text-align: center;
+  padding: 4px 0;
+  z-index: 2;
+}
+.energy-pool .pool-id {
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+}
+.energy-pool .pool-num {
+  font-size: 1rem;
+  color: var(--hud-amber);
+  font-weight: bold;
+  text-shadow: var(--glow-amber);
+}
+
+/* 下方位置 - 近程单位 */
+.units-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 0;
+  z-index: 2;
+}
+
+/* === 底部数据区 === */
+.my-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, transparent, rgba(0, 168, 255, 0.06));
+  border-top: 1px solid rgba(0, 168, 255, 0.2);
+  flex-shrink: 0;
+}
+.my-section.turn-active {
+  border-top-color: var(--hud-amber);
+  box-shadow: 0 -4px 16px rgba(255, 191, 0, 0.2);
+}
+.my-signals {
+  display: flex;
+  gap: 6px;
+}
+.my-signal-card {
+  width: 60px; height: 84px;
+  background: rgba(0, 168, 255, 0.08);
+  border: 1px solid rgba(0, 168, 255, 0.3);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+.my-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.7rem;
+}
+.my-call-sign {
+  color: var(--hud-blue);
+  font-weight: bold;
+}
+.my-energy-val {
+  color: var(--hud-green);
+  font-weight: bold;
+}
+
+/* === 命令输入区 === */
+.command-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--hud-amber);
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cmd-timer {
+  width: 100%;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-hud);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.cmd-timer-fill {
+  height: 100%;
+  width: 65%;
+  background: linear-gradient(90deg, var(--hud-green), var(--hud-amber), var(--hud-red));
+}
+.cmd-timer-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.55rem;
+  color: var(--hud-white);
+  font-weight: bold;
+}
+.cmd-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.cmd-btn {
+  padding: 7px 14px;
+  font-family: var(--font-hud);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.cmd-btn.cmd-abort {
+  background: rgba(127, 140, 141, 0.15);
+  border: 1px solid rgba(127, 140, 141, 0.3);
+  color: #7f8c8d;
+}
+.cmd-btn.cmd-hold {
+  background: rgba(0, 168, 255, 0.12);
+  border: 1px solid rgba(0, 168, 255, 0.35);
+  color: var(--hud-blue);
+}
+.cmd-btn.cmd-link {
+  background: rgba(0, 255, 65, 0.12);
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  color: var(--hud-green);
+  box-shadow: var(--glow-green);
+}
+.cmd-btn.cmd-boost {
+  background: rgba(255, 191, 0, 0.12);
+  border: 1px solid rgba(255, 191, 0, 0.35);
+  color: var(--hud-amber);
+}
+.cmd-btn.cmd-overload {
+  background: rgba(255, 34, 0, 0.12);
+  border: 1px solid rgba(255, 34, 0, 0.35);
+  color: var(--hud-red);
+  box-shadow: 0 0 10px rgba(255, 34, 0, 0.3);
+}
+
+/* === 底部导航栏 === */
+.nav-bar {
+  display: flex;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-hud);
+  flex-shrink: 0;
+}
+.nav-item {
+  flex: 1;
+  padding: 8px 0;
+  text-align: center;
+  font-family: var(--font-hud);
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+}
+.nav-item.nav-active {
+  color: var(--hud-green);
+  text-shadow: var(--glow-green);
+}
+.nav-item.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 30%; right: 30%;
+  height: 2px;
+  background: var(--hud-green);
+}
+.nav-icon {
+  font-size: 1rem;
+}
+
+.phase-strip {
+  text-align: center;
+  padding: 4px;
+  background: rgba(0, 255, 65, 0.04);
+  color: var(--hud-amber);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- HUD顶部 -->
+  <div class="hud-top">
+    <span class="ship-id">🚀 FLEET-7A3</span>
+    <span class="cycle-num">ORBIT #3</span>
+    <span class="energy-val">⬡ 2400</span>
+    <button class="hud-exit">EJECT</button>
+  </div>
+
+  <!-- 主战术区 -->
+  <div class="tactical-zone">
+    <div class="radar-panel">
+      <!-- 远程单位（上方） -->
+      <div class="units-top">
+        <div class="unit-card empty-unit">— EMPTY —</div>
+        <div class="unit-card">
+          <div class="unit-avatar">M</div>
+          <div class="unit-name">老王</div>
+          <div class="unit-energy">⬡ 800</div>
+          <div class="unit-signal">▸ 40</div>
+          <div class="unit-status-icons">
+            <div class="status-dot">?</div>
+            <div class="status-dot">?</div>
+          </div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-avatar">Z</div>
+          <div class="unit-name">小赵</div>
+          <div class="unit-energy">⬡ 1200</div>
+          <div class="unit-status-icons">
+            <div class="status-dot">?</div>
+            <div class="status-dot">?</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中间单位行 -->
+      <div class="units-top">
+        <div class="unit-card">
+          <div class="unit-avatar">L</div>
+          <span class="badge-hud">CMD</span>
+          <div class="unit-name">阿丽</div>
+          <div class="unit-energy">⬡ 600</div>
+          <div class="unit-signal">▸ 20</div>
+        </div>
+        <div class="unit-card folded-unit">
+          <div class="unit-avatar">H</div>
+          <div class="unit-name">大锤</div>
+          <div class="unit-energy">⬡ 500</div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-avatar">F</div>
+          <div class="unit-name">飞飞</div>
+          <div class="unit-energy">⬡ 900</div>
+        </div>
+      </div>
+
+      <!-- 信号阵列（公共牌） -->
+      <div class="signal-array">
+        <div class="signal-chip active-signal"><span class="chip-id">S1</span>🂡</div>
+        <div class="signal-chip active-signal"><span class="chip-id">S2</span>🂧</div>
+        <div class="signal-chip active-signal"><span class="chip-id">S3</span>🃁</div>
+        <div class="signal-chip blank-signal"><span class="chip-id">S4</span></div>
+        <div class="signal-chip blank-signal"><span class="chip-id">S5</span></div>
+      </div>
+
+      <!-- 能量池 -->
+      <div class="energy-pool">
+        <span class="pool-id">ENERGY GRID</span>
+        <span class="pool-num">⬡ 2400</span>
+      </div>
+
+      <!-- 近程单位（下方） -->
+      <div class="units-bottom">
+        <div class="unit-card">
+          <div class="unit-avatar">K</div>
+          <div class="unit-name">凯哥</div>
+          <div class="unit-energy">⬡ 1500</div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-avatar">Q</div>
+          <div class="unit-name">七七</div>
+          <div class="unit-energy">⬡ 700</div>
+        </div>
+        <div class="unit-card my-unit active-unit">
+          <div class="unit-avatar" style="color:var(--hud-blue)">★</div>
+          <div class="unit-name">我</div>
+          <div class="unit-energy">⬡ 1000</div>
+          <div class="unit-signal">▸ 40</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部数据区 -->
+  <div class="my-section turn-active">
+    <div class="my-signals">
+      <div class="my-signal-card">🂡</div>
+      <div class="my-signal-card">🂧</div>
+    </div>
+    <div class="my-info-col">
+      <span class="my-call-sign">》CALLSIGN: 我</span>
+      <span class="my-energy-val">⬡ 1000</span>
+    </div>
+  </div>
+
+  <!-- 命令输入区 -->
+  <div class="command-zone">
+    <div class="cmd-timer">
+      <div class="cmd-timer-fill"></div>
+      <span class="cmd-timer-label">⏱ 18s</span>
+    </div>
+    <div class="cmd-buttons">
+      <button class="cmd-btn cmd-abort">ABORT</button>
+      <button class="cmd-btn cmd-hold">HOLD</button>
+      <button class="cmd-btn cmd-link">LINK</button>
+      <button class="cmd-btn cmd-boost">BOOST</button>
+      <button class="cmd-btn cmd-overload">OVERLOAD</button>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="nav-bar">
+    <div class="nav-item"><span class="nav-icon">📊</span>CREW</div>
+    <div class="nav-item nav-active"><span class="nav-icon">🎯</span>TACTICAL</div>
+    <div class="nav-item"><span class="nav-icon">💬</span>COMMS</div>
+    <div class="nav-item"><span class="nav-icon">📋</span>LOG</div>
+  </div>
+
+  <!-- 阶段条 -->
+  <div class="phase-strip">▸ PHASE: SIGNAL_SCAN ◂</div>
+</div>
+</body>
+</html>

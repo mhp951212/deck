@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>预览C - 量子数据中枢</title>
+<style>
+/* ===== 量子数据中枢 风格 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --quant-purple: #8b5cf6;
+  --quant-teal: #06b6d4;
+  --quant-gold: #fbbf24;
+  --quant-rose: #f43f5e;
+  --quant-emerald: #10b981;
+  --bg-void: #0f0b1e;
+  --bg-surface: rgba(15, 11, 30, 0.88);
+  --bg-node: rgba(139, 92, 246, 0.08);
+  --border-quant: rgba(139, 92, 246, 0.3);
+  --border-teal: rgba(6, 182, 212, 0.3);
+  --glow-purple: 0 0 12px rgba(139, 92, 246, 0.4);
+  --glow-teal: 0 0 12px rgba(6, 182, 212, 0.4);
+  --glow-gold: 0 0 12px rgba(251, 191, 36, 0.4);
+  --text-main: #d4d4e8;
+  --text-dim: rgba(139, 92, 246, 0.4);
+  --font-quant: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+body {
+  font-family: var(--font-quant);
+  background: var(--bg-void);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+}
+/* 量子波动背景 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 80%);
+  pointer-events: none;
+  z-index: -1;
+}
+/* 网格线背景 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* === 顶部连接栏 === */
+.link-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-quant);
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+.channel-id {
+  color: var(--quant-purple);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.channel-id::before {
+  content: '◈ ';
+}
+.cycle-info {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+}
+.flow-val {
+  color: var(--quant-gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.link-exit {
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: var(--quant-rose);
+  padding: 4px 10px;
+  font-size: 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* === 量子交互区 === */
+.quantum-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 中枢面板 */
+.nexus-panel {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-quant);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+/* 面板渐变边框 */
+.nexus-panel::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--quant-purple), var(--quant-teal), var(--quant-purple));
+  z-index: -1;
+  opacity: 0.3;
+}
+
+/* 上方节点行 */
+.nodes-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 4px 4px;
+  z-index: 2;
+}
+.node-unit {
+  width: 72px;
+  background: var(--bg-node);
+  border: 1px solid var(--border-quant);
+  border-radius: 12px;
+  padding: 6px;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+}
+.node-unit.active-node {
+  border-color: var(--quant-gold);
+  box-shadow: var(--glow-gold);
+}
+.node-unit.me-node {
+  border-color: var(--quant-teal);
+  box-shadow: var(--glow-teal);
+}
+.node-unit.folded-node {
+  opacity: 0.2;
+}
+.node-unit.empty-node {
+  background: transparent;
+  border-color: rgba(139, 92, 246, 0.1);
+  color: var(--text-dim);
+  font-size: 0.55rem;
+}
+.node-glyph {
+  width: 28px; height: 28px;
+  border-radius: 10px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid var(--border-quant);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--quant-purple);
+}
+.node-label {
+  font-size: 0.55rem;
+  color: var(--text-main);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.node-flow {
+  font-size: 0.5rem;
+  color: var(--quant-emerald);
+  font-weight: 600;
+}
+.node-emit {
+  font-size: 0.45rem;
+  color: var(--quant-gold);
+}
+.node-states {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 3px;
+}
+.state-chip {
+  width: 18px; height: 24px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 4px;
+  font-size: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.role-tag {
+  font-size: 0.4rem;
+  color: var(--quant-gold);
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  padding: 0px 4px;
+  border-radius: 4px;
+}
+
+/* 量子态序列（原公共牌） */
+.quantum-sequence {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px 0 4px;
+  z-index: 2;
+}
+.q-state {
+  width: 50px; height: 68px;
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid var(--border-teal);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  position: relative;
+  transition: all 0.3s;
+}
+.q-state.resolved {
+  border-color: var(--quant-teal);
+  background: rgba(6, 182, 212, 0.12);
+  box-shadow: var(--glow-teal);
+}
+.q-state.unresolved {
+  background: transparent;
+  border-color: rgba(6, 182, 212, 0.1);
+}
+.q-state .q-id {
+  font-size: 0.4rem;
+  color: var(--text-dim);
+  position: absolute;
+  top: 3px;
+}
+
+/* 流量池 */
+.flow-pool {
+  text-align: center;
+  padding: 4px 0;
+  z-index: 2;
+}
+.flow-pool .flow-tag {
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+.flow-pool .flow-num {
+  font-size: 1rem;
+  color: var(--quant-gold);
+  font-weight: 700;
+}
+
+/* 下方节点行 */
+.nodes-row-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 4px 8px;
+  z-index: 2;
+}
+
+/* === 底部状态区 === */
+.my-state-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, transparent, rgba(6, 182, 212, 0.06));
+  border-top: 1px solid var(--border-teal);
+  flex-shrink: 0;
+}
+.my-state-bar.turn-on {
+  border-top-color: var(--quant-gold);
+  box-shadow: 0 -4px 16px rgba(251, 191, 36, 0.15);
+}
+.my-q-cards {
+  display: flex;
+  gap: 8px;
+}
+.my-q-card {
+  width: 58px; height: 82px;
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: var(--glow-teal);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.my-q-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+.my-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.7rem;
+}
+.my-identity {
+  color: var(--quant-teal);
+  font-weight: 600;
+}
+.my-identity::before {
+  content: '⟨ ';
+}
+.my-identity::after {
+  content: ' ⟩';
+}
+.my-quanta {
+  color: var(--quant-emerald);
+  font-weight: 700;
+}
+
+/* === 操控区 === */
+.control-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border-top: 1px solid rgba(251, 191, 36, 0.3);
+  gap: 6px;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+.ctrl-timer {
+  width: 100%;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-quant);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ctrl-timer-fill {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, var(--quant-emerald), var(--quant-gold), var(--quant-rose));
+  border-radius: 8px;
+}
+.ctrl-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ctrl-btn {
+  padding: 8px 16px;
+  font-family: var(--font-quant);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+.ctrl-btn.ctrl-drop {
+  background: rgba(127, 140, 141, 0.08);
+  border: 1px solid rgba(127, 140, 141, 0.25);
+  color: #7f8c8d;
+}
+.ctrl-btn.ctrl-pause {
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  color: var(--quant-teal);
+}
+.ctrl-btn.ctrl-sync {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--quant-emerald);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+}
+.ctrl-btn.ctrl-amplify {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  color: var(--quant-gold);
+}
+.ctrl-btn.ctrl-collapse {
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: var(--quant-rose);
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.3);
+}
+
+/* === 底部Tab栏 === */
+.mode-bar {
+  display: flex;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-quant);
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+.mode-item {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+.mode-item.mode-active {
+  color: var(--quant-purple);
+}
+.mode-item.mode-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%; right: 25%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--quant-purple), var(--quant-teal));
+  border-radius: 2px;
+}
+.mode-icon {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.phase-tag {
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(139, 92, 246, 0.04);
+  color: var(--quant-gold);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 连接栏 -->
+  <div class="link-bar">
+    <span class="channel-id">CHANNEL-7A3F</span>
+    <span class="cycle-info">Cycle #3</span>
+    <span class="flow-val">∞ 2400</span>
+    <button class="link-exit">DISCONNECT</button>
+  </div>
+
+  <!-- 量子交互区 -->
+  <div class="quantum-field">
+    <div class="nexus-panel">
+      <!-- 上方节点 -->
+      <div class="nodes-row">
+        <div class="node-unit empty-node">∅</div>
+        <div class="node-unit">
+          <div class="node-glyph">M</div>
+          <div class="node-label">老王</div>
+          <div class="node-flow">∞ 800</div>
+          <div class="node-emit">emit 40</div>
+          <div class="node-states">
+            <div class="state-chip">?</div>
+            <div class="state-chip">?</div>
+          </div>
+        </div>
+        <div class="node-unit">
+          <div class="node-glyph">Z</div>
+          <div class="node-label">小赵</div>
+          <div class="node-flow">∞ 1200</div>
+          <div class="node-states">
+            <div class="state-chip">?</div>
+            <div class="state-chip">?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nodes-row">
+        <div class="node-unit">
+          <div class="node-glyph">L</div>
+          <span class="role-tag">CMD</span>
+          <div class="node-label">阿丽</div>
+          <div class="node-flow">∞ 600</div>
+          <div class="node-emit">emit 20</div>
+        </div>
+        <div class="node-unit folded-node">
+          <div class="node-glyph">H</div>
+          <div class="node-label">大锤</div>
+          <div class="node-flow">∞ 500</div>
+        </div>
+        <div class="node-unit">
+          <div class="node-glyph">F</div>
+          <div class="node-label">飞飞</div>
+          <div class="node-flow">∞ 900</div>
+        </div>
+      </div>
+
+      <!-- 量子态序列 -->
+      <div class="quantum-sequence">
+        <div class="q-state resolved"><span class="q-id">Ψ1</span>🂡</div>
+        <div class="q-state resolved"><span class="q-id">Ψ2</span>🂧</div>
+        <div class="q-state resolved"><span class="q-id">Ψ3</span>🃁</div>
+        <div class="q-state unresolved"><span class="q-id">Ψ4</span></div>
+        <div class="q-state unresolved"><span class="q-id">Ψ5</span></div>
+      </div>
+
+      <!-- 流量池 -->
+      <div class="flow-pool">
+        <span class="flow-tag">FLOW RESERVE</span>
+        <span class="flow-num">∞ 2400</span>
+      </div>
+
+      <!-- 下方节点 -->
+      <div class="nodes-row-bottom">
+        <div class="node-unit">
+          <div class="node-glyph">K</div>
+          <div class="node-label">凯哥</div>
+          <div class="node-flow">∞ 1500</div>
+        </div>
+        <div class="node-unit">
+          <div class="node-glyph">Q</div>
+          <div class="node-label">七七</div>
+          <div class="node-flow">∞ 700</div>
+        </div>
+        <div class="node-unit me-node active-node">
+          <div class="node-glyph" style="color:var(--quant-teal)">★</div>
+          <div class="node-label">我</div>
+          <div class="node-flow">∞ 1000</div>
+          <div class="node-emit">emit 40</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部状态区 -->
+  <div class="my-state-bar turn-on">
+    <div class="my-q-cards">
+      <div class="my-q-card">🂡</div>
+      <div class="my-q-card">🂧</div>
+    </div>
+    <div class="my-detail">
+      <span class="my-identity">我</span>
+      <span class="my-quanta">∞ 1000</span>
+    </div>
+  </div>
+
+  <!-- 操控区 -->
+  <div class="control-strip">
+    <div class="ctrl-timer">
+      <div class="ctrl-timer-fill"></div>
+    </div>
+    <div class="ctrl-actions">
+      <button class="ctrl-btn ctrl-drop">DROP</button>
+      <button class="ctrl-btn ctrl-pause">PAUSE</button>
+      <button class="ctrl-btn ctrl-sync">SYNC</button>
+      <button class="ctrl-btn ctrl-amplify">AMPLIFY</button>
+      <button class="ctrl-btn ctrl-collapse">COLLAPSE</button>
+    </div>
+  </div>
+
+  <!-- 底部模式栏 -->
+  <div class="mode-bar">
+    <div class="mode-item"><span class="mode-icon">📊</span>RANK</div>
+    <div class="mode-item mode-active"><span class="mode-icon">◈</span>NEXUS</div>
+    <div class="mode-item"><span class="mode-icon">💬</span>COMMS</div>
+    <div class="mode-item"><span class="mode-icon">📋</span>LOG</div>
+  </div>
+
+  <!-- 阶段标签 -->
+  <div class="phase-tag">⟨ SEQUENCE: RESOLVE_3 ⟩</div>
+</div>
+</body>
+</html>

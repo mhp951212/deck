@@ -28,10 +28,10 @@ module.exports = {
     spades: "♠",
   },
   SUIT_COLORS: {
-    hearts: "#e74c3c",
-    diamonds: "#e74c3c",
-    clubs: "#2c3e50",
-    spades: "#2c3e50",
+    hearts: "#ff4466",
+    diamonds: "#ff4466",
+    clubs: "#00f0ff",
+    spades: "#e0e8f0",
   },
   RANKS: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
   RANK_NAMES: {

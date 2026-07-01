@@ -1,8 +1,8 @@
-/* 卡牌样式 */
+/* ===== 数据节点样式（赛博朋克卡牌） ===== */
 .card {
   width: 60px;
   height: 84px;
-  border-radius: 6px;
+  border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -23,22 +23,21 @@
   height: 62px;
 }
 
-/* 牌面 */
+/* 节点正面（牌面） */
 .card-face {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
-  border-radius: 6px;
-  border: 2px solid #e0e0e0;
+  background: rgba(0, 240, 255, 0.06);
+  border-radius: 3px;
+  border: 1px solid rgba(0, 240, 255, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow:
-    0 4px 8px rgba(0,0,0,0.3),
-    0 1px 3px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.9);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.3),
+              0 2px 4px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(0, 240, 255, 0.1);
 }
 
 .card-corner {
@@ -51,75 +50,74 @@
 }
 
 .card-corner.top-left {
-  top: 4px;
-  left: 5px;
-  font-size: 0.95rem;
+  top: 3px;
+  left: 4px;
+  font-size: 0.85rem;
 }
 
 .card-corner.bottom-right {
-  bottom: 4px;
-  right: 5px;
+  bottom: 3px;
+  right: 4px;
   transform: rotate(180deg);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .card-small .card-corner {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
 }
 
 .card-small .card-corner.top-left {
-  top: 3px;
+  top: 2px;
   left: 3px;
 }
 
 .card-small .card-corner.bottom-right {
-  bottom: 3px;
+  bottom: 2px;
   right: 3px;
 }
 
 .card-rank {
   font-weight: 800;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.1);
-  font-family: 'Arial Black', 'Arial Bold', sans-serif;
+  text-shadow: 0 0 4px rgba(0, 240, 255, 0.5);
+  font-family: 'Courier New', 'Consolas', monospace;
 }
 
 .card-suit {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1;
 }
 
 .card-small .card-suit {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
 }
 
 .card-center {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   line-height: 1;
 }
 
 .card-small .card-center {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .card-suit-large {
   line-height: 1;
 }
 
-/* 牌背 */
+/* 节点背面（牌背） */
 .card-back {
   width: 100%;
   height: 100%;
   background:
-    repeating-linear-gradient(45deg, #1a472a, #1a472a 3px, #1e5032 3px, #1e5032 6px);
-  border-radius: 6px;
-  border: 2px solid #0f3320;
+    repeating-linear-gradient(45deg, rgba(255, 0, 255, 0.08), rgba(255, 0, 255, 0.08) 3px, rgba(0, 240, 255, 0.05) 3px, rgba(0, 240, 255, 0.05) 6px);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 0, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 4px 8px rgba(0,0,0,0.3),
-    0 1px 3px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.3),
+              0 2px 4px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 0, 255, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -127,41 +125,38 @@
 .card-back::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
-    radial-gradient(circle at 70% 70%, rgba(0,0,0,0.2) 0%, transparent 50%);
+    radial-gradient(circle at 30% 30%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(0, 240, 255, 0.1) 0%, transparent 50%);
 }
 
 .card-back-pattern {
-  font-size: 1.8rem;
-  color: rgba(255,255,255,0.25);
+  font-size: 1.6rem;
+  color: rgba(255, 0, 255, 0.3);
   font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
   position: relative;
   z-index: 1;
 }
 
 .card-small .card-back-pattern {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
-/* 占位牌 */
+/* 占位节点 */
 .card-placeholder {
-  background: rgba(26, 26, 46, 0.3);
-  border: 2px dashed rgba(255,255,255,0.3);
-  border-radius: 6px;
+  background: rgba(0, 240, 255, 0.03);
+  border: 1px dashed rgba(0, 240, 255, 0.2);
+  border-radius: 3px;
 }
 
-/* 发牌动画 */
+/* 发牌/数据传输动画 */
 .card {
-  animation: cardDeal 0.4s ease-out;
+  animation: dataStream 0.4s ease-out;
 }
 
-@keyframes cardDeal {
+@keyframes dataStream {
   from {
     transform: scale(0.5) translateY(-20px);
     opacity: 0;
@@ -170,4 +165,65 @@
     transform: scale(1) translateY(0);
     opacity: 1;
   }
+}
+
+/* 隐藏状态 */
+.card-hidden .card-face {
+  opacity: 0;
+}
+
+/* 红色花色（♥♦） - 霓虹红边框+光晕 */
+.card-face.red-suit {
+  border-color: rgba(255, 68, 102, 0.35);
+  box-shadow: 0 0 8px rgba(255, 68, 102, 0.35),
+              0 2px 4px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 68, 102, 0.1);
+}
+
+/* 青色花色（♣） - 霓虹青边框+光晕 */
+.card-face.cyan-suit {
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.35),
+              0 2px 4px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(0, 240, 255, 0.1);
+  background: rgba(0, 240, 255, 0.06);
+}
+
+/* 白色花色（♠） - 亮白边框+微光 */
+.card-face.white-suit {
+  border-color: rgba(224, 232, 240, 0.35);
+  box-shadow: 0 0 6px rgba(224, 232, 240, 0.25),
+              0 2px 4px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(224, 232, 240, 0.1);
+}
+
+/* 花色文字加粗发光，确保可读性 */
+.card-face.red-suit .card-rank,
+.card-face.red-suit .card-suit,
+.card-face.red-suit .card-suit-large {
+  text-shadow: 0 0 6px rgba(255, 68, 102, 0.6);
+}
+
+.card-face.cyan-suit .card-rank,
+.card-face.cyan-suit .card-suit,
+.card-face.cyan-suit .card-suit-large {
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.6);
+}
+
+.card-face.white-suit .card-rank,
+.card-face.white-suit .card-suit,
+.card-face.white-suit .card-suit-large {
+  text-shadow: 0 0 4px rgba(224, 232, 240, 0.5);
+}
+
+/* ===== 卡牌响应式 ===== */
+@media (max-width: 360px) {
+  .card { width: 48px; height: 66px; }
+  .card-small { width: 36px; height: 50px; }
+  .card-corner { font-size: 0.7rem; }
+  .card-small .card-corner { font-size: 0.5rem; }
+  .card-center { font-size: 1.2rem; }
+  .card-small .card-center { font-size: 0.9rem; }
+  .card-back-pattern { font-size: 1.2rem; }
+  .card-small .card-back-pattern { font-size: 0.8rem; }
 }

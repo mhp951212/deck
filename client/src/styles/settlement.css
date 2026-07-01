@@ -1,102 +1,80 @@
-/* ===== 结算弹窗 - 经典扑克俱乐部风格 ===== */
+/* ===== 赛博朋克结算弹窗 ===== */
 
 .settlement-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   pointer-events: none;
   animation: fadeIn 0.3s ease-out;
+  background: rgba(10, 10, 26, 0.5);
 }
 
-/* 让弹窗本身可点击，但背景区域不阻挡 */
 .settlement-overlay > .settlement-modal {
   pointer-events: auto;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .settlement-modal {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border: 3px solid #3498db;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
-              0 0 40px rgba(52, 152, 219, 0.3);
-  max-width: 600px;
-  width: 90%;
-  max-height: 85vh;
+  background: var(--bg-panel);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 8px;
+  box-shadow: var(--glow-cyan), 0 0 40px rgba(0, 240, 255, 0.3);
+  max-width: 420px;
+  width: 92%;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
   animation: slideUp 0.4s ease-out;
+  backdrop-filter: blur(8px);
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* ===== 顶部标题区 ===== */
+/* 顶部标题区 */
 .settlement-header {
-  background: linear-gradient(90deg, #f1c40f 0%, #f39c12 100%);
-  border-radius: 17px 17px 0 0;
-  padding: 20px 30px;
+  background: linear-gradient(90deg, rgba(240, 255, 0, 0.12), rgba(0, 240, 255, 0.12));
+  border-radius: 6px 6px 0 0;
+  padding: 14px 20px;
   text-align: center;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-neon);
 }
 
 .settlement-title {
-  font-size: 24px;
+  font-size: 1rem;
   font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 12px;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+  color: var(--neon-yellow);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+  text-shadow: var(--glow-yellow);
 }
 
 .settlement-pot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .settlement-pot .pot-label {
-  font-size: 14px;
-  color: #34495e;
-  font-weight: 500;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
 }
 
 .settlement-pot .pot-value {
-  font-size: 32px;
+  font-size: 1.2rem;
   font-weight: bold;
-  color: #2c3e50;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.2);
+  color: var(--neon-yellow);
+  text-shadow: var(--glow-yellow);
 }
 
-/* ===== 边池摘要条 ===== */
+/* 边池摘要 */
 .side-pots-bar {
-  padding: 10px 20px;
+  padding: 8px 14px;
   background: rgba(0, 0, 0, 0.25);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-dim);
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -104,272 +82,253 @@
 .side-pot-chip {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 12px;
-  border-radius: 14px;
-  font-size: 12px;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 0.6rem;
   font-weight: 600;
   border: 1px solid;
+  letter-spacing: 1px;
 }
 
 .side-pot-chip.main {
-  background: rgba(241, 196, 15, 0.15);
-  border-color: rgba(241, 196, 15, 0.4);
-  color: #f1c40f;
+  background: rgba(240, 255, 0, 0.12);
+  border-color: rgba(240, 255, 0, 0.35);
+  color: var(--neon-yellow);
 }
 
 .side-pot-chip.side {
-  background: rgba(155, 89, 182, 0.15);
-  border-color: rgba(155, 89, 182, 0.4);
-  color: #bb86fc;
+  background: rgba(255, 0, 255, 0.12);
+  border-color: rgba(255, 0, 255, 0.35);
+  color: var(--neon-magenta);
 }
 
 .side-pot-chip .sp-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
+.side-pot-chip.main .sp-dot { background: var(--neon-yellow); }
+.side-pot-chip.side .sp-dot { background: var(--neon-magenta); }
 
-.side-pot-chip.main .sp-dot {
-  background: #f1c40f;
-}
-
-.side-pot-chip.side .sp-dot {
-  background: #bb86fc;
-}
-
-/* ===== 边池赢得明细 ===== */
+/* 边池赢得明细 */
 .pot-wins-detail {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   margin-top: 2px;
 }
 
 .pot-win-line {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 0.55rem;
   font-weight: 500;
 }
 
 .pot-win-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
+.pot-win-dot.main { background: var(--neon-yellow); }
+.pot-win-dot.side { background: var(--neon-magenta); }
 
-.pot-win-dot.main {
-  background: #f1c40f;
-}
+.pot-win-label { color: var(--text-dim); }
+.pot-win-amount { color: var(--neon-green); font-weight: 600; }
 
-.pot-win-dot.side {
-  background: #bb86fc;
-}
-
-.pot-win-label {
-  color: #bdc3c7;
-}
-
-.pot-win-amount {
-  color: #2ecc71;
-  font-weight: 600;
-}
-
-/* ===== 公共牌区 ===== */
+/* 公共牌区 */
 .settlement-community {
-  padding: 20px;
+  padding: 14px;
   background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-dim);
 }
 
 .community-cards {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  min-height: 60px;
+  gap: 6px;
+  min-height: 40px;
   align-items: center;
 }
 
 .no-community {
-  color: #7f8c8d;
-  font-size: 14px;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
 }
 
-/* ===== 玩家结果列表 ===== */
+/* 玩家结果列表 */
 .settlement-players {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-.settlement-players::-webkit-scrollbar {
-  width: 6px;
-}
-
-.settlement-players::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.settlement-players::-webkit-scrollbar-thumb {
-  background: #3498db;
-  border-radius: 3px;
-}
+.settlement-players::-webkit-scrollbar { width: 4px; }
+.settlement-players::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+.settlement-players::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 2px; }
 
 .settlement-player-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid transparent;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.03);
+  border: 1px solid var(--border-dim);
   transition: all 0.2s;
 }
 
 .settlement-player-row.winner {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(39, 174, 96, 0.1) 100%);
-  border-color: #2ecc71;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+  background: rgba(0, 255, 136, 0.08);
+  border-color: rgba(0, 255, 136, 0.35);
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
 }
 
 .settlement-player-row.loser {
-  background: rgba(127, 140, 141, 0.1);
-  border-color: rgba(127, 140, 141, 0.3);
+  background: rgba(127, 140, 141, 0.08);
+  border-color: rgba(127, 140, 141, 0.2);
 }
 
 .settlement-player-row.me {
-  border-color: #3498db;
-  box-shadow: 0 0 12px rgba(52, 152, 219, 0.3);
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: var(--glow-cyan);
 }
 
 .player-rank {
-  font-size: 20px;
+  font-size: 1rem;
   font-weight: bold;
-  color: #7f8c8d;
-  min-width: 40px;
+  color: var(--text-dim);
+  min-width: 30px;
   text-align: center;
 }
 
 .winner .player-rank {
-  color: #2ecc71;
+  color: var(--neon-green);
 }
 
 .player-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .player-name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .player-name {
-  font-size: 16px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #ecf0f1;
+  color: var(--text-main);
+  letter-spacing: 1px;
 }
 
 .me-tag {
-  font-size: 12px;
-  color: #3498db;
-  background: rgba(52, 152, 219, 0.2);
-  padding: 2px 8px;
-  border-radius: 8px;
+  font-size: 0.55rem;
+  color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  padding: 1px 6px;
+  border-radius: 2px;
   font-weight: 500;
+  letter-spacing: 1px;
 }
 
 .winner-tag {
-  font-size: 12px;
-  color: #2ecc71;
-  background: rgba(46, 204, 113, 0.2);
-  padding: 2px 8px;
-  border-radius: 8px;
+  font-size: 0.55rem;
+  color: var(--neon-green);
+  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  padding: 1px 6px;
+  border-radius: 2px;
   font-weight: 500;
+  letter-spacing: 1px;
 }
 
 .player-folded-label {
-  font-size: 13px;
-  color: #7f8c8d;
-  font-style: italic;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
 }
 
 .player-hand-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .hole-cards {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .hand-rank-name {
-  font-size: 13px;
-  color: #f1c40f;
+  font-size: 0.65rem;
+  color: var(--neon-yellow);
   font-weight: 500;
-  background: rgba(241, 196, 15, 0.1);
-  padding: 3px 8px;
-  border-radius: 6px;
+  background: rgba(240, 255, 0, 0.1);
+  border: 1px solid rgba(240, 255, 0, 0.25);
+  padding: 2px 6px;
+  border-radius: 2px;
+  letter-spacing: 1px;
 }
 
 .player-profit {
   text-align: right;
-  min-width: 80px;
+  min-width: 60px;
 }
 
 .profit-positive {
-  font-size: 22px;
+  font-size: 1rem;
   font-weight: bold;
-  color: #2ecc71;
-  text-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
+  color: var(--neon-green);
+  text-shadow: var(--glow-green);
 }
 
 .profit-negative {
-  font-size: 18px;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: #7f8c8d;
+  color: var(--text-dim);
 }
 
 .profit-zero {
-  font-size: 18px;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: #95a5a6;
+  color: var(--text-dim);
 }
 
-/* ===== 底部按钮 ===== */
+/* 底部按钮 */
 .settlement-footer {
-  padding: 20px 30px;
+  padding: 14px 20px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 0 0 17px 17px;
+  border-radius: 0 0 6px 6px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-/* 我的筹码显示 */
 .my-chips-display {
-  font-size: 16px;
-  color: #ecf0f1;
+  font-size: 0.8rem;
+  color: var(--text-main);
   font-weight: 500;
+  letter-spacing: 1px;
 }
 
 .my-chips-value {
-  color: #f1c40f;
+  color: var(--neon-yellow);
   font-weight: bold;
-  font-size: 18px;
+  font-size: 0.9rem;
   margin-left: 4px;
 }
 
@@ -379,85 +338,89 @@
 }
 
 .settlement-ready-btn {
-  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
-  color: white;
-  border: none;
-  padding: 14px 40px;
-  font-size: 16px;
+  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  color: var(--neon-green);
+  padding: 12px 30px;
+  font-size: 0.85rem;
   font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
-  transition: all 0.2s;
+  border-radius: 4px;
+  letter-spacing: 2px;
+  box-shadow: var(--glow-green);
 }
-
 .settlement-ready-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
-}
-
-.settlement-ready-btn:active {
-  transform: translateY(0);
+  background: rgba(0, 255, 136, 0.2);
 }
 
 .settlement-ready-btn.ready {
-  background: linear-gradient(90deg, #95a5a6 0%, #7f8c8d 100%);
+  background: rgba(127, 140, 141, 0.12);
+  border-color: rgba(127, 140, 141, 0.25);
+  color: #7f8c8d;
   cursor: not-allowed;
   box-shadow: none;
 }
 
 .settlement-buy-btn {
-  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
-  color: white;
-  border: none;
-  padding: 14px 40px;
-  font-size: 16px;
+  background: rgba(240, 255, 0, 0.12);
+  border: 1px solid rgba(240, 255, 0, 0.35);
+  color: var(--neon-yellow);
+  padding: 12px 30px;
+  font-size: 0.85rem;
   font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
-  transition: all 0.2s;
+  border-radius: 4px;
+  letter-spacing: 2px;
+  box-shadow: var(--glow-yellow);
 }
-
 .settlement-buy-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
-}
-
-.settlement-buy-btn:active {
-  transform: translateY(0);
+  background: rgba(240, 255, 0, 0.2);
 }
 
 .settlement-ready-count {
-  font-size: 14px;
-  color: #ecf0f1;
-  font-weight: 500;
-}
-
-.next-hand-btn {
-  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
-  color: white;
-  border: none;
-  padding: 14px 40px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
-  transition: all 0.2s;
-}
-
-.next-hand-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
-}
-
-.next-hand-btn:active {
-  transform: translateY(0);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
 }
 
 .waiting-host-text {
-  color: #7f8c8d;
-  font-size: 14px;
-  font-style: italic;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+
+/* ===== 结算弹窗响应式 ===== */
+@media (max-width: 360px) {
+  .settlement-modal { max-width: 95%; width: 95%; max-height: 85vh; }
+  .settlement-header { padding: 10px 14px; }
+  .settlement-title { font-size: 0.8rem; }
+  .settlement-pot .pot-value { font-size: 1rem; }
+  .settlement-community { padding: 10px; }
+  .community-cards { gap: 4px; }
+  .settlement-players { padding: 10px; gap: 6px; }
+  .settlement-player-row { padding: 6px 8px; gap: 6px; }
+  .player-rank { font-size: 0.8rem; min-width: 22px; }
+  .player-name { font-size: 0.75rem; }
+  .me-tag, .winner-tag { font-size: 0.45rem; }
+  .player-folded-label { font-size: 0.6rem; }
+  .hand-rank-name { font-size: 0.5rem; }
+  .profit-positive { font-size: 0.8rem; }
+  .profit-negative, .profit-zero { font-size: 0.7rem; }
+  .player-profit { min-width: 45px; }
+  .settlement-footer { padding: 10px 14px; gap: 8px; }
+  .settlement-ready-btn { padding: 10px 20px; font-size: 0.75rem; }
+  .settlement-buy-btn { padding: 10px 20px; font-size: 0.75rem; }
+  .side-pots-bar { padding: 6px 10px; gap: 6px; }
+  .side-pot-chip { font-size: 0.5rem; padding: 2px 6px; }
+  .my-chips-display { font-size: 0.7rem; }
+  .my-chips-value { font-size: 0.8rem; }
+  .settlement-ready-count { font-size: 0.6rem; }
+}
+
+@media (max-height: 500px) {
+  .settlement-modal { max-height: 90vh; }
+  .settlement-header { padding: 8px 12px; }
+  .settlement-community { padding: 6px; }
+  .settlement-player-row { padding: 4px 6px; gap: 4px; }
+  .settlement-footer { padding: 8px 12px; gap: 6px; }
 }

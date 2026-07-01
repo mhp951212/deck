@@ -31,15 +31,15 @@ async function startServer() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    width: 480,
+    height: 850,
     title: "逍遥情缘",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    icon: path.join(__dirname, "../client/public/poker-icon.svg"),
+    // icon: path.join(__dirname, "../client/public/poker-icon.svg"),
   });
 
   // 加载客户端页面
@@ -107,9 +107,9 @@ function buildMenu() {
             const { dialog } = require("electron");
             dialog.showMessageBox(mainWindow, {
               type: "info",
-              title: "关于逍遥情缘",
+              title: "关于 ◈ DATA NEXUS",
               message:
-                "逍遥情缘 v1.0\n逍遥情缘\n\n其他玩家可通过浏览器访问本机IP加入游戏",
+                "◈ DATA NEXUS v1.0\n赛博数据互联\n\n其他节点可通过浏览器访问本机IP加入链路",
             });
           },
         },

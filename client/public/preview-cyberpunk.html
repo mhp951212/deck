@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>预览A - 赛博朋克指挥台</title>
+<style>
+/* ===== 赛博朋克指挥台 风格 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #ff00ff;
+  --neon-yellow: #f0ff00;
+  --neon-green: #00ff88;
+  --neon-red: #ff0044;
+  --bg-deep: #0a0a1a;
+  --bg-panel: rgba(10, 14, 28, 0.85);
+  --bg-card: rgba(0, 240, 255, 0.06);
+  --border-neon: rgba(0, 240, 255, 0.35);
+  --glow-cyan: 0 0 15px rgba(0, 240, 255, 0.5);
+  --glow-magenta: 0 0 15px rgba(255, 0, 255, 0.5);
+  --text-main: #e0e8f0;
+  --text-dim: rgba(200, 220, 240, 0.5);
+  --font-mono: 'Courier New', 'Consolas', monospace;
+}
+body {
+  font-family: var(--font-mono);
+  background: var(--bg-deep);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+/* 扫描线背景 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0, 240, 255, 0.03) 2px, rgba(0, 240, 255, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+/* 全屏粒子网格 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0, 240, 255, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 0% 100%, rgba(255, 0, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(0, 240, 255, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* === 顶部状态栏 === */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-neon);
+  flex-shrink: 0;
+  position: relative;
+}
+.status-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-cyan));
+  animation: borderFlow 3s linear infinite;
+}
+@keyframes borderFlow {
+  from { background-position: 0 0; }
+  to { background-position: 200px 0; }
+}
+.room-id {
+  color: var(--neon-cyan);
+  font-size: 0.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: var(--glow-cyan);
+}
+.round-num {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+.pool-val {
+  color: var(--neon-yellow);
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(240, 255, 0, 0.5);
+}
+.exit-btn {
+  background: rgba(255, 0, 68, 0.15);
+  border: 1px solid rgba(255, 0, 68, 0.4);
+  color: var(--neon-red);
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+/* === 中间战场区 === */
+.battlefield {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 中心战术面板 - 垂直菱形 */
+.tactical-panel {
+  position: relative;
+  width: 92%;
+  max-width: 360px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-neon);
+  border-radius: 4px;
+  box-shadow: var(--glow-cyan), inset 0 0 30px rgba(0, 240, 255, 0.05);
+  overflow: hidden;
+}
+
+/* 面板内网格线 */
+.tactical-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+/* 公共数据节点（原公共牌） */
+.data-nodes {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding: 8px 0;
+  z-index: 2;
+}
+.data-node {
+  width: 52px;
+  height: 72px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  position: relative;
+  box-shadow: var(--glow-cyan);
+}
+.data-node.active {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.15);
+}
+.data-node.empty {
+  border-color: rgba(0, 240, 255, 0.15);
+  background: transparent;
+  box-shadow: none;
+}
+.data-node .node-label {
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  position: absolute;
+  top: 2px;
+}
+
+/* 数据池（底池） */
+.data-pool {
+  text-align: center;
+  padding: 4px 0;
+  z-index: 2;
+}
+.data-pool .pool-label {
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+}
+.data-pool .pool-value {
+  font-size: 1.1rem;
+  color: var(--neon-yellow);
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(240, 255, 0, 0.4);
+}
+
+/* 竖屏座位布局 - 上下分布 */
+.seats-vertical {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+  z-index: 2;
+  padding: 0 4px;
+}
+.seats-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.seat-unit {
+  width: 70px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-neon);
+  border-radius: 3px;
+  padding: 5px 6px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s;
+}
+.seat-unit.active-turn {
+  border-color: var(--neon-yellow);
+  box-shadow: 0 0 12px rgba(240, 255, 0, 0.4);
+}
+.seat-unit.me-unit {
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+.seat-unit.folded {
+  opacity: 0.3;
+}
+.seat-unit.empty-unit {
+  background: transparent;
+  border-color: rgba(0, 240, 255, 0.1);
+  color: var(--text-dim);
+  font-size: 0.6rem;
+}
+.avatar-char {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--border-neon);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--neon-cyan);
+  margin-bottom: 2px;
+}
+.seat-name {
+  font-size: 0.55rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.seat-chips {
+  font-size: 0.5rem;
+  color: var(--neon-green);
+  font-weight: bold;
+}
+.seat-bet {
+  font-size: 0.45rem;
+  color: var(--neon-yellow);
+  margin-top: 1px;
+}
+.seat-cards-mini {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 2px;
+}
+.mini-card {
+  width: 22px; height: 30px;
+  background: rgba(255, 0, 255, 0.2);
+  border: 1px solid rgba(255, 0, 255, 0.4);
+  border-radius: 2px;
+  font-size: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.badge-dealer {
+  font-size: 0.4rem;
+  color: var(--neon-yellow);
+  background: rgba(240, 255, 0, 0.15);
+  border: 1px solid rgba(240, 255, 0, 0.4);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+/* === 底部手牌区 === */
+.my-data-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.08));
+  border-top: 1px solid var(--border-neon);
+  flex-shrink: 0;
+}
+.my-data-area.my-turn-indicator {
+  border-top-color: var(--neon-yellow);
+  box-shadow: 0 -4px 20px rgba(240, 255, 0, 0.2);
+}
+.my-cards-display {
+  display: flex;
+  gap: 6px;
+}
+.my-card {
+  width: 64px; height: 88px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: var(--glow-cyan);
+}
+.my-card-back {
+  background: rgba(255, 0, 255, 0.15);
+  border-color: rgba(255, 0, 255, 0.4);
+  box-shadow: var(--glow-magenta);
+}
+.my-data-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.75rem;
+}
+.my-data-name {
+  color: var(--neon-cyan);
+  font-weight: bold;
+  text-shadow: var(--glow-cyan);
+}
+.my-data-chips {
+  color: var(--neon-green);
+  font-weight: bold;
+}
+
+/* === 操作区 === */
+.action-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--bg-panel);
+  border-top: 2px solid var(--neon-yellow);
+  gap: 6px;
+  flex-shrink: 0;
+}
+.timer-track {
+  width: 100%;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-neon);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.timer-fill {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, var(--neon-green), var(--neon-yellow), var(--neon-red));
+  transition: width 1s linear;
+}
+.timer-text {
+  font-size: 0.65rem;
+  color: var(--text-main);
+  font-weight: bold;
+}
+.action-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.act-btn {
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.act-btn.fold-btn {
+  background: rgba(127, 140, 141, 0.2);
+  border: 1px solid rgba(127, 140, 141, 0.4);
+  color: #95a5a6;
+}
+.act-btn.check-btn {
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+.act-btn.call-btn {
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: var(--neon-green);
+}
+.act-btn.raise-btn {
+  background: rgba(240, 255, 0, 0.15);
+  border: 1px solid rgba(240, 255, 0, 0.4);
+  color: var(--neon-yellow);
+}
+.act-btn.allin-btn {
+  background: rgba(255, 0, 68, 0.15);
+  border: 1px solid rgba(255, 0, 68, 0.4);
+  color: var(--neon-red);
+  box-shadow: 0 0 10px rgba(255, 0, 68, 0.3);
+}
+
+/* === 底部标签栏 === */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-neon);
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+.tab-btn.active-tab {
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-cyan);
+}
+.tab-btn.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--neon-cyan);
+}
+.tab-btn .tab-icon {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+/* === 浮动信息面板（点击tab弹出） === */
+.info-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 26, 0.9);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.info-panel {
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-neon);
+  border-radius: 8px 8px 0 0;
+  padding: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.info-panel-title {
+  color: var(--neon-cyan);
+  font-size: 0.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: var(--glow-cyan);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-neon);
+  margin-bottom: 10px;
+}
+.chat-msg-unit {
+  padding: 4px 0;
+  font-size: 0.7rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.06);
+}
+.chat-name-unit {
+  color: var(--neon-cyan);
+  font-weight: bold;
+}
+.chat-text-unit {
+  color: var(--text-main);
+}
+.log-item {
+  font-size: 0.65rem;
+  padding: 3px 6px;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.06);
+}
+.log-item.me-log {
+  color: var(--neon-cyan);
+}
+
+/* 阶段标签 */
+.phase-label {
+  text-align: center;
+  padding: 4px;
+  background: rgba(0, 240, 255, 0.06);
+  color: var(--neon-yellow);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* 标题文案替换 */
+.title-mask {
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 顶部状态栏 -->
+  <div class="status-bar">
+    <span class="room-id">NODE-7A3F</span>
+    <span class="round-num">CYCLE #3</span>
+    <span class="pool-val">⚡ 2400</span>
+    <button class="exit-btn">DECOUPLE</button>
+  </div>
+
+  <!-- 中间战场区 -->
+  <div class="battlefield">
+    <div class="tactical-panel">
+      <!-- 上方3个座位 -->
+      <div class="seats-vertical">
+        <div class="seats-row">
+          <div class="seat-unit empty-unit">— 空 —</div>
+          <div class="seat-unit">
+            <div class="avatar-char">M</div>
+            <div class="seat-name">老王</div>
+            <div class="seat-chips">⚡ 800</div>
+            <div class="seat-bet">投入 40</div>
+            <div class="seat-cards-mini">
+              <div class="mini-card">?</div>
+              <div class="mini-card">?</div>
+            </div>
+          </div>
+          <div class="seat-unit">
+            <div class="avatar-char">Z</div>
+            <div class="seat-name">小赵</div>
+            <div class="seat-chips">⚡ 1200</div>
+            <div class="seat-cards-mini">
+              <div class="mini-card">?</div>
+              <div class="mini-card">?</div>
+            </div>
+          </div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-unit">
+            <div class="avatar-char">L</div>
+            <span class="badge-dealer">D</span>
+            <div class="seat-name">阿丽</div>
+            <div class="seat-chips">⚡ 600</div>
+            <div class="seat-bet">投入 20</div>
+          </div>
+          <div class="seat-unit folded">
+            <div class="avatar-char">H</div>
+            <div class="seat-name">大锤</div>
+            <div class="seat-chips">⚡ 500</div>
+          </div>
+          <div class="seat-unit">
+            <div class="avatar-char">F</div>
+            <div class="seat-name">飞飞</div>
+            <div class="seat-chips">⚡ 900</div>
+          </div>
+        </div>
+
+        <!-- 公共数据节点 -->
+        <div class="data-nodes">
+          <div class="data-node active"><span class="node-label">N1</span>🂡</div>
+          <div class="data-node active"><span class="node-label">N2</span>🂧</div>
+          <div class="data-node active"><span class="node-label">N3</span>🃁</div>
+          <div class="data-node empty"><span class="node-label">N4</span></div>
+          <div class="data-node empty"><span class="node-label">N5</span></div>
+        </div>
+        <div class="data-pool">
+          <span class="pool-label">ENERGY POOL</span>
+          <span class="pool-value">⚡ 2400</span>
+        </div>
+
+        <!-- 下方3个座位 -->
+        <div class="seats-row">
+          <div class="seat-unit">
+            <div class="avatar-char">K</div>
+            <div class="seat-name">凯哥</div>
+            <div class="seat-chips">⚡ 1500</div>
+          </div>
+          <div class="seat-unit">
+            <div class="avatar-char">Q</div>
+            <div class="seat-name">七七</div>
+            <div class="seat-chips">⚡ 700</div>
+          </div>
+          <div class="seat-unit me-unit active-turn">
+            <div class="avatar-char">★</div>
+            <div class="seat-name">我</div>
+            <div class="seat-chips">⚡ 1000</div>
+            <div class="seat-bet">投入 40</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部手牌区 -->
+  <div class="my-data-area my-turn-indicator">
+    <div class="my-cards-display">
+      <div class="my-card">🂡</div>
+      <div class="my-card">🂧</div>
+    </div>
+    <div class="my-data-info">
+      <span class="my-data-name">> OPERATOR_我</span>
+      <span class="my-data-chips">⚡ 1000</span>
+    </div>
+  </div>
+
+  <!-- 操作区 -->
+  <div class="action-zone">
+    <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+      <span class="timer-text">⏱ 18s</span>
+      <div class="timer-track">
+        <div class="timer-fill" style="width:60%"></div>
+      </div>
+    </div>
+    <div class="action-btns">
+      <button class="act-btn fold-btn">DECOUPLE</button>
+      <button class="act-btn check-btn">SYNC</button>
+      <button class="act-btn call-btn">LINK</button>
+      <button class="act-btn raise-btn">BOOST</button>
+      <button class="act-btn allin-btn">SURGE</button>
+    </div>
+  </div>
+
+  <!-- 底部标签栏 -->
+  <div class="tab-bar">
+    <button class="tab-btn"><span class="tab-icon">📊</span>RANK</button>
+    <button class="tab-btn active-tab"><span class="tab-icon">📡</span>FIELD</button>
+    <button class="tab-btn"><span class="tab-icon">💬</span>COMMS</button>
+    <button class="tab-btn"><span class="tab-icon">📋</span>LOG</button>
+  </div>
+
+  <!-- 阶段标签 -->
+  <div class="phase-label">◆ PHASE: FLOP ◆</div>
+</div>
+</body>
+</html>

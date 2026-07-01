@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>预览D - 神经矩阵界面</title>
+<style>
+/* ===== 神经矩阵界面 风格 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --neu-amber: #ff9500;
+  --neu-red: #dc2626;
+  --neu-crimson: #be123c;
+  --neu-green: #22c55e;
+  --neu-blue: #3b82f6;
+  --neu-violet: #7c3aed;
+  --bg-abyss: #0c0a0f;
+  --bg-membrane: rgba(12, 10, 15, 0.92);
+  --bg-synapse: rgba(255, 149, 0, 0.06);
+  --border-syn: rgba(255, 149, 0, 0.2);
+  --border-neu: rgba(124, 58, 237, 0.2);
+  --glow-amber: 0 0 10px rgba(255, 149, 0, 0.35);
+  --glow-violet: 0 0 10px rgba(124, 58, 237, 0.35);
+  --glow-red: 0 0 10px rgba(220, 38, 38, 0.35);
+  --text-bio: #c4a878;
+  --text-dim: rgba(255, 149, 0, 0.3);
+  --font-neu: 'Georgia', 'Palatino', serif;
+  --font-neu-mono: 'Courier New', monospace;
+}
+body {
+  font-family: var(--font-neu);
+  background: var(--bg-abyss);
+  color: var(--text-bio);
+  height: 100vh;
+  overflow: hidden;
+}
+/* 生物光背景 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(255, 149, 0, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(220, 38, 38, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+/* 神经脉冲线 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 10% 30%, rgba(255,149,0,0.5), transparent),
+    radial-gradient(2px 2px at 30% 70%, rgba(255,149,0,0.3), transparent),
+    radial-gradient(1px 1px at 50% 50%, rgba(124,58,237,0.4), transparent),
+    radial-gradient(2px 2px at 70% 20%, rgba(220,38,38,0.3), transparent),
+    radial-gradient(1px 1px at 90% 80%, rgba(255,149,0,0.5), transparent),
+    radial-gradient(1px 1px at 15% 60%, rgba(124,58,237,0.2), transparent),
+    radial-gradient(1px 1px at 85% 40%, rgba(255,149,0,0.2), transparent);
+  pointer-events: none;
+  z-index: -1;
+  animation: bioPulse 8s ease-in-out infinite;
+}
+@keyframes bioPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* === 顶部神经链条 === */
+.neural-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-membrane);
+  border-bottom: 1px solid var(--border-syn);
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+.neural-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--neu-amber), var(--neu-violet), var(--neu-amber));
+  animation: synFlow 4s linear infinite;
+}
+@keyframes synFlow {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(30deg); }
+}
+.cluster-id {
+  color: var(--neu-amber);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: var(--glow-amber);
+}
+.cluster-id::before {
+  content: '⬡ ';
+  color: var(--neu-violet);
+}
+.pulse-num {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  font-family: var(--font-neu-mono);
+}
+.synapse-val {
+  color: var(--neu-green);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.neural-exit {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  color: var(--neu-red);
+  padding: 4px 10px;
+  font-size: 0.65rem;
+  font-family: var(--font-neu-mono);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* === 神经矩阵区 === */
+.matrix-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 矩阵面板 */
+.matrix-panel {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-membrane);
+  border: 1px solid var(--border-syn);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+/* 神经脉冲光晕 */
+.matrix-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 149, 0, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  animation: nodePulse 3s ease-in-out infinite;
+}
+@keyframes nodePulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* 上方神经元行 */
+.neuron-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 4px 4px;
+  z-index: 2;
+}
+.neuron-unit {
+  width: 72px;
+  background: var(--bg-synapse);
+  border: 1px solid var(--border-syn);
+  border-radius: 10px;
+  padding: 6px;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+}
+.neuron-unit.active-neuron {
+  border-color: var(--neu-green);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+.neuron-unit.me-neuron {
+  border-color: var(--neu-blue);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+.neuron-unit.folded-neuron {
+  opacity: 0.2;
+}
+.neuron-unit.empty-neuron {
+  background: transparent;
+  border-color: rgba(255, 149, 0, 0.08);
+  color: var(--text-dim);
+  font-size: 0.55rem;
+}
+.neuron-icon {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 149, 0, 0.1);
+  border: 2px solid var(--border-syn);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--neu-amber);
+}
+.neuron-name {
+  font-size: 0.55rem;
+  color: var(--text-bio);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.neuron-potential {
+  font-size: 0.5rem;
+  color: var(--neu-green);
+  font-weight: 700;
+  font-family: var(--font-neu-mono);
+}
+.neuron-transmit {
+  font-size: 0.45rem;
+  color: var(--neu-amber);
+  font-family: var(--font-neu-mono);
+}
+.neuron-patterns {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 3px;
+}
+.pattern-chip {
+  width: 16px; height: 22px;
+  background: rgba(255, 149, 0, 0.1);
+  border: 1px solid rgba(255, 149, 0, 0.25);
+  border-radius: 4px;
+  font-size: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-bio);
+}
+.role-mark {
+  font-size: 0.38rem;
+  color: var(--neu-amber);
+  background: rgba(255, 149, 0, 0.1);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+  padding: 0px 4px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  font-family: var(--font-neu-mono);
+}
+
+/* 信号序列（公共牌） */
+.signal-sequence {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px 0 4px;
+  z-index: 2;
+}
+.sig-block {
+  width: 48px; height: 66px;
+  background: rgba(255, 149, 0, 0.06);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  position: relative;
+  transition: all 0.3s;
+}
+.sig-block.sig-active {
+  border-color: var(--neu-amber);
+  box-shadow: var(--glow-amber);
+}
+.sig-block.sig-empty {
+  background: transparent;
+  border-color: rgba(255, 149, 0, 0.08);
+}
+.sig-block .sig-id {
+  font-size: 0.4rem;
+  color: var(--text-dim);
+  position: absolute;
+  top: 2px;
+  font-family: var(--font-neu-mono);
+}
+
+/* 神经能量池 */
+.neural-pool {
+  text-align: center;
+  padding: 4px 0;
+  z-index: 2;
+}
+.neural-pool .pool-tag {
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  font-family: var(--font-neu-mono);
+}
+.neural-pool .pool-num {
+  font-size: 1rem;
+  color: var(--neu-green);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+/* 下方神经元行 */
+.neuron-row-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 4px 8px;
+  z-index: 2;
+}
+
+/* === 底部神经活动区 === */
+.my-axon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, transparent, rgba(255, 149, 0, 0.04));
+  border-top: 1px solid rgba(255, 149, 0, 0.15);
+  flex-shrink: 0;
+}
+.my-axon.axon-active {
+  border-top-color: var(--neu-green);
+  box-shadow: 0 -4px 16px rgba(34, 197, 94, 0.2);
+}
+.my-axon-cards {
+  display: flex;
+  gap: 8px;
+}
+.my-axon-card {
+  width: 56px; height: 80px;
+  background: rgba(255, 149, 0, 0.06);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--glow-amber);
+}
+.my-axon-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(255, 149, 0, 0.5);
+}
+.my-axon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.7rem;
+}
+.my-axon-id {
+  color: var(--neu-blue);
+  font-weight: 700;
+  font-family: var(--font-neu-mono);
+}
+.my-axon-id::before {
+  content: '⬡ ';
+}
+.my-axon-energy {
+  color: var(--neu-green);
+  font-weight: 700;
+  font-family: var(--font-neu-mono);
+}
+
+/* === 神经指令区 === */
+.instruct-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-membrane);
+  border-top: 1px solid rgba(34, 197, 94, 0.3);
+  gap: 6px;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+.instruct-timer {
+  width: 100%;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-syn);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+.instruct-timer-bar {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, var(--neu-green), var(--neu-amber), var(--neu-red));
+  border-radius: 8px;
+  animation: timerPulse 2s ease-in-out infinite;
+}
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+.instruct-timer-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.55rem;
+  font-family: var(--font-neu-mono);
+  color: var(--text-bio);
+}
+.instruct-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.instruct-btn {
+  padding: 8px 14px;
+  font-family: var(--font-neu);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+.instruct-btn.ins-dormant {
+  background: rgba(127, 140, 141, 0.08);
+  border: 1px solid rgba(127, 140, 141, 0.2);
+  color: #7f8c8d;
+}
+.instruct-btn.ins-still {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--neu-blue);
+}
+.instruct-btn.ins-resonate {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: var(--neu-green);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+}
+.instruct-btn.ins-amplify {
+  background: rgba(255, 149, 0, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+  color: var(--neu-amber);
+}
+.instruct-btn.ins-overdrive {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: var(--neu-red);
+  box-shadow: var(--glow-red);
+}
+
+/* === 底部功能栏 === */
+.func-bar {
+  display: flex;
+  background: var(--bg-membrane);
+  border-top: 1px solid var(--border-syn);
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+.func-item {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 0.55rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+.func-item.func-active {
+  color: var(--neu-amber);
+  text-shadow: var(--glow-amber);
+}
+.func-item.func-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%; right: 25%;
+  height: 3px;
+  background: var(--neu-amber);
+  border-radius: 2px;
+}
+.func-icon {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.phase-band {
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(255, 149, 0, 0.04);
+  color: var(--neu-amber);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  font-weight: 600;
+  font-family: var(--font-neu-mono);
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 神经链条 -->
+  <div class="neural-header">
+    <span class="cluster-id">AXON-7A3</span>
+    <span class="pulse-num">PULSE #3</span>
+    <span class="synapse-val">⬡ 2400</span>
+    <button class="neural-exit">SEVER</button>
+  </div>
+
+  <!-- 神经矩阵区 -->
+  <div class="matrix-field">
+    <div class="matrix-panel">
+      <!-- 上方神经元 -->
+      <div class="neuron-row">
+        <div class="neuron-unit empty-neuron">— ∅ —</div>
+        <div class="neuron-unit">
+          <div class="neuron-icon">M</div>
+          <div class="neuron-name">老王</div>
+          <div class="neuron-potential">⬡ 800</div>
+          <div class="neuron-transmit">▸ 40</div>
+          <div class="neuron-patterns">
+            <div class="pattern-chip">?</div>
+            <div class="pattern-chip">?</div>
+          </div>
+        </div>
+        <div class="neuron-unit">
+          <div class="neuron-icon">Z</div>
+          <div class="neuron-name">小赵</div>
+          <div class="neuron-potential">⬡ 1200</div>
+          <div class="neuron-patterns">
+            <div class="pattern-chip">?</div>
+            <div class="pattern-chip">?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="neuron-row">
+        <div class="neuron-unit">
+          <div class="neuron-icon">L</div>
+          <span class="role-mark">HUB</span>
+          <div class="neuron-name">阿丽</div>
+          <div class="neuron-potential">⬡ 600</div>
+          <div class="neuron-transmit">▸ 20</div>
+        </div>
+        <div class="neuron-unit folded-neuron">
+          <div class="neuron-icon">H</div>
+          <div class="neuron-name">大锤</div>
+          <div class="neuron-potential">⬡ 500</div>
+        </div>
+        <div class="neuron-unit">
+          <div class="neuron-icon">F</div>
+          <div class="neuron-name">飞飞</div>
+          <div class="neuron-potential">⬡ 900</div>
+        </div>
+      </div>
+
+      <!-- 信号序列 -->
+      <div class="signal-sequence">
+        <div class="sig-block sig-active"><span class="sig-id">S1</span>🂡</div>
+        <div class="sig-block sig-active"><span class="sig-id">S2</span>🂧</div>
+        <div class="sig-block sig-active"><span class="sig-id">S3</span>🃁</div>
+        <div class="sig-block sig-empty"><span class="sig-id">S4</span></div>
+        <div class="sig-block sig-empty"><span class="sig-id">S5</span></div>
+      </div>
+
+      <!-- 神经能量池 -->
+      <div class="neural-pool">
+        <span class="pool-tag">SYNAPTIC RESERVE</span>
+        <span class="pool-num">⬡ 2400</span>
+      </div>
+
+      <!-- 下方神经元 -->
+      <div class="neuron-row-bottom">
+        <div class="neuron-unit">
+          <div class="neuron-icon">K</div>
+          <div class="neuron-name">凯哥</div>
+          <div class="neuron-potential">⬡ 1500</div>
+        </div>
+        <div class="neuron-unit">
+          <div class="neuron-icon">Q</div>
+          <div class="neuron-name">七七</div>
+          <div class="neuron-potential">⬡ 700</div>
+        </div>
+        <div class="neuron-unit me-neuron active-neuron">
+          <div class="neuron-icon" style="color:var(--neu-blue);border-color:var(--neu-blue)">★</div>
+          <div class="neuron-name">我</div>
+          <div class="neuron-potential">⬡ 1000</div>
+          <div class="neuron-transmit">▸ 40</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部神经活动区 -->
+  <div class="my-axon axon-active">
+    <div class="my-axon-cards">
+      <div class="my-axon-card">🂡</div>
+      <div class="my-axon-card">🂧</div>
+    </div>
+    <div class="my-axon-info">
+      <span class="my-axon-id">我</span>
+      <span class="my-axon-energy">⬡ 1000</span>
+    </div>
+  </div>
+
+  <!-- 神经指令区 -->
+  <div class="instruct-zone">
+    <div class="instruct-timer">
+      <div class="instruct-timer-bar"></div>
+      <span class="instruct-timer-text">⏱ 18s</span>
+    </div>
+    <div class="instruct-actions">
+      <button class="instruct-btn ins-dormant">DORMANT</button>
+      <button class="instruct-btn ins-still">STILL</button>
+      <button class="instruct-btn ins-resonate">RESONATE</button>
+      <button class="instruct-btn ins-amplify">AMPLIFY</button>
+      <button class="instruct-btn ins-overdrive">OVERDRIVE</button>
+    </div>
+  </div>
+
+  <!-- 底部功能栏 -->
+  <div class="func-bar">
+    <div class="func-item"><span class="func-icon">📊</span>MAP</div>
+    <div class="func-item func-active"><span class="func-icon">⬡</span>MATRIX</div>
+    <div class="func-item"><span class="func-icon">💬</span>SIGNAL</div>
+    <div class="func-item"><span class="func-icon">📋</span>TRACE</div>
+  </div>
+
+  <!-- 阶段条 -->
+  <div class="phase-band">⬡ PULSE: SYNAPSE_3 ⬡</div>
+</div>
+</body>
+</html>

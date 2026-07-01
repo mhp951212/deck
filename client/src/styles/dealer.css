@@ -1,16 +1,18 @@
+/* ===== 赛博朋克荷官/系统播报 ===== */
 .dealer-overlay {
   position: fixed;
-  top: 80px;
+  top: 60px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
   pointer-events: none;
   animation: dealerSlideIn 0.5s ease-out;
+  max-width: 90%;
 }
 
 @keyframes dealerSlideIn {
   from {
-    transform: translateX(-50%) translateY(-100px);
+    transform: translateX(-50%) translateY(-80px);
     opacity: 0;
   }
   to {
@@ -22,48 +24,44 @@
 .dealer-container {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   background: rgba(0, 0, 0, 0.85);
-  border: 2px solid #2ecc71;
-  border-radius: 16px;
-  padding: 16px 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6),
-              0 0 24px rgba(46, 204, 113, 0.3);
+  border: 1px solid var(--neon-green);
+  border-radius: 6px;
+  padding: 12px 18px;
+  box-shadow: var(--glow-green), 0 0 20px rgba(0, 255, 136, 0.3);
   animation: dealerPulse 0.6s ease-out;
+  backdrop-filter: blur(8px);
 }
 
 @keyframes dealerPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .dealer-speech {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-width: 400px;
+  gap: 6px;
+  max-width: 300px;
 }
 
 .dealer-name {
-  font-size: 16px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #2ecc71;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: var(--neon-green);
+  text-shadow: var(--glow-green);
+  letter-spacing: 2px;
 }
 
 .dealer-quote {
-  font-size: 18px;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: #ecf0f1;
+  color: var(--text-main);
   line-height: 1.4;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
 }
 
-/* 淡出动画 */
 .dealer-overlay.hiding {
   animation: dealerFadeOut 0.5s ease-out forwards;
 }
@@ -74,7 +72,22 @@
     opacity: 1;
   }
   to {
-    transform: translateX(-50%) translateY(-50px);
+    transform: translateX(-50%) translateY(-40px);
     opacity: 0;
   }
+}
+
+/* ===== 播报响应式 ===== */
+@media (max-width: 360px) {
+  .dealer-overlay { top: 40px; max-width: 92%; }
+  .dealer-container { padding: 8px 12px; gap: 8px; }
+  .dealer-speech { max-width: 220px; }
+  .dealer-name { font-size: 0.6rem; }
+  .dealer-quote { font-size: 0.7rem; }
+}
+
+@media (max-height: 500px) {
+  .dealer-overlay { top: 30px; }
+  .dealer-container { padding: 6px 10px; }
+  .dealer-quote { font-size: 0.7rem; }
 }
